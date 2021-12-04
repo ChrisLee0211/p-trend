@@ -1,0 +1,41 @@
+/*  tsconfig.json */
+{
+    "compilerOptions": {
+      "rootDir": "./src",
+      /* 基础配置 */
+      "target": "es2015",
+      "lib": [
+        "esnext"
+      ],
+      "module": "commonJs",
+      "removeComments": false,
+      "declaration": true,
+      "sourceMap": true,
+      "paths": {
+        "@/*":["src/*"]
+      },
+      /* 强类型检查配置 */
+      "strict": true,
+      "noImplicitAny": false,
+  
+      /* 模块分析配置 */
+      "baseUrl": ".",
+      "outDir": "./dist",
+      "esModuleInterop": false,
+      "moduleResolution": "node",
+      "resolveJsonModule": true,
+      "typeRoots": [                            /* 要包含的类型声明文件路径列表*/
+        "./typings",
+        "./node_modules/@types",
+        "./src/types"
+        ],
+    },
+    "include": [
+      "src"
+    ],
+    "exclude": [
+      "node_modules/**",
+      "test"
+    ]
+  }
+  
