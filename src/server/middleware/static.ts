@@ -3,7 +3,7 @@ import * as path from 'path';
 
 export const StaticMeddleware = () => {
     return static_(
-        path.join(__dirname, '../assets'),
+        path.join(__dirname, '../../../client/dist'),
         {
             setHeaders(res, path){
                 const pathSplit = (path as string).split('.');

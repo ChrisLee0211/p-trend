@@ -2,6 +2,7 @@ import * as Koa from 'koa';
 class RenderService {
     async renderHtml(ctx:Koa.Context,next:Koa.Next):Promise<void> {
         const port = ctx.state.port as number;
+        const mainfest = ctx.state.mainfest;
         const htmlContent = `
             <!DOCTYPE html>
             <html lang="en">
@@ -13,9 +14,9 @@ class RenderService {
                 <script>
                     window.preloadState = {port:${port}}
                 </script>
-                <script type="module" crossorigin src="/index.0420c969.js"></script>
-                <link rel="modulepreload" href="/vendor.e66d1d89.js">
-                <link rel="stylesheet" href="/index.8276116f.css">
+                <script type="module" crossorigin src="assets/${mainfest.index}"></script>
+                <link rel="modulepreload" href="assets/${mainfest.vendor}">
+                <link rel="stylesheet" href="assets/${mainfest.css}">
             </head>
             <body>
                 <div id="app"></div>

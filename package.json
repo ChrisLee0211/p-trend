@@ -12,7 +12,7 @@
     "build": "tsc --build tsconfig.json"
   },
   "bin": {
-    "unusee": "./dist/index.js"
+    "p-trend": "./dist/index.js"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^14.0.0",
@@ -42,7 +42,7 @@
     "commander": "^7.2.0",
     "inquirer": "^8.1.1",
     "koa": "^2.13.1",
-    "koa-bodyparser": "3",
+    "koa-bodyparser": "4.3.0",
     "koa-router": "^10.0.0",
     "koa-static": "^5.0.0",
     "single-line-log2": "^1.1.3"
