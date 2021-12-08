@@ -24,11 +24,17 @@ program
             entry:'./',
             port:8080
         };
-        if(commandOptions.includes('entry')) {
-            defaultConfig.entry = cmd._optionValues.entry;
-        }
-        if(commandOptions.includes('port')) {
-            defaultConfig.port = cmd._optionValues.port;
+        if (checkPathIsUseful('p-trend.config.js')) {
+            try{
+                const fullPath = concatPath(getCurrentPath(),'p-trend.config.js');
+                const isExist = await checkFileIsBuilt(fullPath);
+                if(isExist){
+                    const config = await configLoader(fullPath);
+                    defaultConfig = {...defaultConfig, ...config};
+                }
+            }catch(e){
+                console.error(e);
+            }
         }
         if(commandOptions.includes('config')) {
             const configPath = cmd._optionValues.config as string;
@@ -48,6 +54,12 @@ program
                 throw new Error(`Can not find conifg file by wrong path, please check if is correct`);
             }
         }
+        if(commandOptions.includes('entry')) {
+            defaultConfig.entry = cmd._optionValues.entry;
+        }
+        if(commandOptions.includes('port')) {
+            defaultConfig.port = cmd._optionValues.port;
+        }
         log('开始扫描项目','warning');
         try{
             let npmDependency:string[] = [];
@@ -62,7 +74,7 @@ program
             await scaner.buildFileTree();
             const result = scaner.diff();
             new Server(scaner,defaultConfig.entry, defaultConfig.port);
-            log(`完成扫描，请打开地址：http://localhost:${defaultConfig.port}/unusee`,'success');
+            log(`完成扫描，请打开地址：http://localhost:${defaultConfig.port}/p-trend`,'success');
         }catch(e){
             console.error(e);
         }
