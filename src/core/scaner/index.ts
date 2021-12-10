@@ -24,6 +24,7 @@ export class ScanerCtr implements Scaner {
      * @author chris lee
      * @Time 2021/07/20
      * @update 2021/07/25 增加对依赖节点的文件大小、修改时间等记录
+     * @TODO depNode的path有问题，需要排查
      */
     async markDependenceNode(target:DependenceNode, currentFileNode:FileNode):Promise<void>{
         const idx = this.dependenceNodes.findIndex(
@@ -75,7 +76,7 @@ export class ScanerCtr implements Scaner {
      * @author chris lee
      * @Time 2021/08/17
      */
-    getModuleName(filePath:string):string {
+    private getModuleName(filePath:string):string {
         const rootFileBasicNames = rootFileEnum;
         const baseName = path.basename(filePath);
         const splitPath = filePath.split(path.sep);
@@ -85,6 +86,25 @@ export class ScanerCtr implements Scaner {
             return splitPath[splitPath.length - 1];
         }
     }
+
+    /**
+     * 根据路径和名称组装fileNode唯一的moduleId用于比较
+     * @param filePath 路径
+     * @param name 文件名
+     * @author chris lee
+     * @Time 2021/12/10
+     */
+    private getModuleId(filePath:string, name:string) {
+        const extName = path.extname(name);
+        if (extName.length) {
+            const moudleName = name.replace(extName,'');
+            const normalizePath = filePath.replace(name, '').replace(path.sep,'-');
+            return normalizePath + moudleName;
+        } else {
+            return filePath.replace(path.sep,'-');
+        }
+    }
+
     /**
      * 根据初始化的entry开始以深度遍历方式扫描文件
      * @param effectFn 扫描文件节点时执行副作用回调
@@ -101,8 +121,9 @@ export class ScanerCtr implements Scaner {
                     const isFolder = files[i].isDirectory();
                     const name = files[i].name;
                     const filePath = path.resolve(this.entry,files[i].name);
+                    const moduleId = this.getModuleId(filePath,name);
                     const curNode:FileNode = {
-                        name,isFolder,path:filePath,deps:[]
+                        name,isFolder,path:filePath,deps:[], moduleId
                     };
                     stack.push(curNode);
                     this.fileNodes.push(curNode);
@@ -118,8 +139,16 @@ export class ScanerCtr implements Scaner {
                             const filePath = path.resolve(currentFileNode.path,files[i].name);
                             const name = this.getModuleName(filePath);
                             const basicInfo = await readFileBasicInfo(filePath);
+                            const moduleId = this.getModuleId(filePath, name);
                             const curNode:FileNode = {
-                                name,isFolder,path:filePath,deps:[],fileSize:basicInfo.size,utime:basicInfo.mtime,ctime:basicInfo.ctime
+                                name,
+                                isFolder,
+                                path:filePath,
+                                deps:[],
+                                fileSize:basicInfo.size,
+                                utime:basicInfo.mtime,
+                                ctime:basicInfo.ctime,
+                                moduleId,
                             };
                             stack.push(curNode);
                             this.fileNodes.push(curNode);
@@ -141,11 +170,13 @@ export class ScanerCtr implements Scaner {
                         // 只要后缀名不为空，那就是一个包含文件名的绝对路径
                         if (pathExtname!== ''){
                             const fileName = this.getModuleName(curPath);
+                            const moduleId = this.getModuleId(curPath,fileName);
                             depNode = {
                                 name:fileName,
                                 path:curPath,
                                 reference:[currentFileNode],
                                 canResolve:true,
+                                moduleId,
                             };
                         } else {
                             // 如果没有后缀名，则为类似"../../sl"的引用，尝试拼接后缀名再校验
@@ -164,11 +195,13 @@ export class ScanerCtr implements Scaner {
                                     const isExist = await checkFileIsBuilt(fullPath);
                                     if (isExist) {
                                      const fileName = this.getModuleName(fullPath);
+                                     const moduleId = this.getModuleId(fullPath, fileName);
                                      depNode = {
                                          name:fileName,
                                          path:fullPath,
                                          reference:[currentFileNode],
                                          canResolve: true,
+                                         moduleId
                                      };
                                      hasDone = true;
                                      break;
@@ -178,11 +211,13 @@ export class ScanerCtr implements Scaner {
                                     // 如果始终没找到文件，则意味着该文件不是一个js可以识别的模块
                                     // 直接取文件路径末尾作为名字
                                     const fileName = this.getModuleName(curPath);
+                                    const moduleId = this.getModuleId(curPath, fileName);
                                     depNode =  {
                                         name:fileName,
                                         path:curPath,
                                         reference:[currentFileNode],
-                                        canResolve:false
+                                        canResolve:false,
+                                        moduleId
                                     };
                                     
                                 }
@@ -236,6 +271,7 @@ export class ScanerCtr implements Scaner {
             path:this.entry,
             isFolder: true,
             children: [],
+            moduleId:''
         };
         stack.push(this.fileTree);
         try{
@@ -248,11 +284,14 @@ export class ScanerCtr implements Scaner {
                             const isFolder = files[i].isDirectory();
                             const filePath = path.resolve(curNode.path,files[i].name);
                             const name = this.getModuleName(filePath);
+                            const modulePath = path.resolve(curNode.path, name.replace(path.extname(name),''));
+                            const moduleId = this.getModuleId(filePath,name);
                             const nodeContent:FileTree = {
                                 name,
-                                path: filePath,
+                                path: modulePath,
                                 isFolder,
-                                children:[]
+                                children:[],
+                                moduleId,
                             };
                             curNode.children.push(nodeContent);
                             stack.push(nodeContent);

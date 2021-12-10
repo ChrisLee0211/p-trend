@@ -92,7 +92,6 @@ class TableService {
        let result = false;
        const targetPath = ctx.request.body.path;
        try{
-           // todo：不能这样删除，应该在scan模块里删除，因为删了文件，还必须把构造过的fileTree、fileNode删掉
            // 不然再请求一样会在内存中返回已删除的节点
            const scaner = ctx.state.scaner as Scaner;
            result = await scaner.removeFileNode(targetPath);
