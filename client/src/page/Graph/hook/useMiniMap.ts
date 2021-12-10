@@ -10,6 +10,6 @@ export const useMiniMap = (className: string, id:string) => {
           type: 'delegate',
           size: [150,150]
         });
-    })
+    });
     return [ MinimapPlugin];
-}
+};

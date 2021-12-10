@@ -98,10 +98,10 @@ export class ScanerCtr implements Scaner {
         const extName = path.extname(name);
         if (extName.length) {
             const moudleName = name.replace(extName,'');
-            const normalizePath = filePath.replace(name, '').replace(path.sep,'-');
+            const normalizePath = filePath.replace(name, '').split(path.sep).join('-');
             return normalizePath + moudleName;
         } else {
-            return filePath.replace(path.sep,'-');
+            return filePath.split(path.sep).join('-');
         }
     }
 

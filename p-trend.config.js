@@ -1,5 +1,8 @@
 module.exports = {
-    port: 8008,
+    port: 8080,
     entry: 'src/',
+    alias: {
+        '@':'src'
+    }
 };
 

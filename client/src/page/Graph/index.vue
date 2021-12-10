@@ -72,7 +72,7 @@ export default defineComponent({
       }
       const depsMap:Record<string, number> = {};
       for(let i=0;i<deps.length;i++) {
-        depsMap[deps[i].path] = i;
+        depsMap[deps[i].moduleId] = i;
       };
       const depsPath = Object.keys(depsMap);
       let root = {
@@ -87,12 +87,12 @@ export default defineComponent({
       while(stack.length) {
         level = level+1;
         let curNode = stack.pop() as TreeGraphData;
-        if (depsPath.includes(curNode.path as string)) {
-          const depIndex = depsMap[curNode.path as string];
+        if (depsPath.includes(curNode.moduleId as string)) {
+          const depIndex = depsMap[curNode.moduleId as string];
           const dep = deps[depIndex];
-          curNode['fileSize'] = dep.size || 0;
+          curNode['fileSize'] = dep.fileSize || 0;
           curNode['ctime'] = dep.ctime;
-          curNode['mtime'] = dep.mtime;
+          curNode['mtime'] = dep.utime;
           curNode['importTimes'] = dep?.reference?.length;
           curNode['isDep'] = true
         }

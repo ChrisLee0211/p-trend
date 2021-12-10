@@ -3,7 +3,7 @@ import {parse} from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as path from 'path';
 import { Config, FileNode } from "../../types/global";
-import { enablePraseType } from "../constant";
+import { enablePraseType, rootFileEnum } from "../constant";
 
 function isAliasExist(alias:any): alias is {[k:string]:string} {
         if(Object.keys(alias).length) return true;
@@ -57,6 +57,7 @@ export class PraserCtr {
         const result:string[] = [];
         if (!depPaths.length) return result;
         const aliasKey = Object.keys(this.alias || {});
+        if (fileNode.name === 'server') { console.log('depPaths ===>', depPaths);console.log('fileNode ===>', JSON.stringify(fileNode));}
         // todo: 根据目前文件路径和相对路径拼接出绝对路径
         for(let i = 0; i<depPaths.length;i++) {
             const dependencePath = depPaths[i];
@@ -82,12 +83,20 @@ export class PraserCtr {
                     continue;
                 }
             } 
-             //todo : 对['..','..','xxx','xx']或者['.','xx','x']进行处理
-                const filefolderPath = fileNode.path.split(fileNode.name)[0];
-                const absolutePath = path.resolve(filefolderPath, dependencePath);
-                if (!result.includes(absolutePath)) {
-                    result.push(absolutePath);
+             // 分两种情况处理路径拼接：
+             // 情况一： 属于xxx/yy/index.js or yy/ss/index.ts 中引用
+             // 情况二： 属于xxx/ss.js 中的引用
+             let filefolderPath = '';
+             if(rootFileEnum.includes(path.basename(fileNode.path))) {
+                const baseName = path.basename(fileNode.path);
+                filefolderPath =fileNode.path.split(baseName)[0];
+             } else {
+                 filefolderPath = fileNode.path.split(fileNode.name)[0];
                 }
+            const absolutePath = path.resolve(filefolderPath, dependencePath);
+            if (!result.includes(absolutePath)) {
+                result.push(absolutePath);
+            }
         }
         return result;
     }
