@@ -15,12 +15,15 @@ function isAliasExist(alias:any): alias is {[k:string]:string} {
 export class PraserCtr {
     alias:Config['alias'] = {}
     npmDeps:string[] = []
-    constructor(alias?:{[key:string]:string}, npmDeps?:string[]) {
+    externals:string[] = []
+    constructor(alias?:{[key:string]:string}, npmDeps?:string[], externals?:string[]) {
         this.alias = alias ?? {};
         this.npmDeps = npmDeps ?? [];
+        this.externals = externals ?? [];
         this.collectImportNodes.bind(this);
         this.parseDependency.bind(this);
         this.normalizePaths.bind(this);
+        this.filterEnabledPath.bind(this);
     }
 
     /**
@@ -37,12 +40,27 @@ export class PraserCtr {
         try{
             const content = await readFileContent(pathname,{encoding:'utf8'}) as string;
             const depPaths = await this.collectImportNodes(content);
-            const depPathsWithoutNpmDeps = depPaths.filter((dep) => !this.npmDeps.includes(dep));
+            const depPathsWithoutNpmDeps = this.filterEnabledPath(depPaths);
             result = this.normalizePaths(depPathsWithoutNpmDeps, node);
         }catch(e){
             console.error(e);
         }
         return result;
+    }
+
+    /**
+     * 过滤出可解析依赖
+     * @param depsPath 依赖路径数组
+     * @returns 不包含npm以及cdn等外部依赖的路径数组
+     * @author chris lee
+     * @Time 2021/12/11
+     */
+    private filterEnabledPath(depsPath: string[]): string[] {
+        return depsPath.filter((depPath) => {
+            const pathSplit = depPath.split(path.sep);
+            const root = pathSplit[0];
+            return !this.npmDeps.includes(root) && !this.externals.includes(root);
+        });
     }
 
     /**
@@ -57,7 +75,6 @@ export class PraserCtr {
         const result:string[] = [];
         if (!depPaths.length) return result;
         const aliasKey = Object.keys(this.alias || {});
-        if (fileNode.name === 'server') { console.log('depPaths ===>', depPaths);console.log('fileNode ===>', JSON.stringify(fileNode));}
         // todo: 根据目前文件路径和相对路径拼接出绝对路径
         for(let i = 0; i<depPaths.length;i++) {
             const dependencePath = depPaths[i];
@@ -84,8 +101,8 @@ export class PraserCtr {
                 }
             } 
              // 分两种情况处理路径拼接：
-             // 情况一： 属于xxx/yy/index.js or yy/ss/index.ts 中引用
-             // 情况二： 属于xxx/ss.js 中的引用
+             // 情况一： 属于xxx/yy/index.js or yy/ss/index.ts 文件中引用
+             // 情况二： 属于xxx/ss.js 文件中的引用
              let filefolderPath = '';
              if(rootFileEnum.includes(path.basename(fileNode.path))) {
                 const baseName = path.basename(fileNode.path);

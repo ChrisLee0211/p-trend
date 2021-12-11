@@ -54,10 +54,13 @@ export interface DependenceNode extends Ifile {
 }
 
 export interface Config {
+    /** 项目扫描入口 */
     entry:string,
+    /** 可视化界面端口 */
     port: number,
-    packageJsonPath?:string
-    dependency?:{[module:string]:string}
+    /** 额外通过cdn等方式引入的npm外部依赖，参照webpack的externals属性，用于过滤这种依赖的扫描记录 */
+    externals?:{[module:string]:string}
+    /** 项目中配置的路径别名 */
     alias?:{
         [key:string]:string
     }

@@ -9,7 +9,7 @@ import {ScanerCtr} from './core/scaner';
 import {Server} from './server';
 import { Config } from "./types/global";
 import { log } from './utils/log';
-import {resolveDependencies, resolvePackage} from './core/helper/resolvePackage';
+import {resolveExternals, resolvePackage} from './core/helper/resolvePackage';
 program.version("1.0.0");
 
 program
@@ -62,17 +62,24 @@ program
         }
         log('开始扫描项目','warning');
         try{
-            let npmDependency:string[] = [];
-            if (defaultConfig.dependency) {
-                npmDependency = resolveDependencies(defaultConfig.dependency);
-            } else if(defaultConfig.packageJsonPath) {
-                npmDependency = await resolvePackage(defaultConfig.packageJsonPath);
+            /** 解析外部依赖 */
+            const externals:string[] = [];
+            if(defaultConfig?.externals) {
+                externals.push(...resolveExternals(defaultConfig.externals));
             }
-            const praser = new PraserCtr(defaultConfig.alias, npmDependency);
+            /** 解析npm依赖 */
+            const npmDependency:string[] = [];
+            try{
+                const packageDeps = await resolvePackage();
+                npmDependency.push(...packageDeps);
+            }catch(e) {
+                console.error(e);
+            }
+            const praser = new PraserCtr(defaultConfig.alias, npmDependency, externals);
             const scaner = new ScanerCtr(defaultConfig.entry);
             await scaner.scan(praser.parseDependency, praser);
             await scaner.buildFileTree();
-            const result = scaner.diff();
+            scaner.diff();
             new Server(scaner,defaultConfig.entry, defaultConfig.port);
             log(`完成扫描，请打开地址：http://localhost:${defaultConfig.port}/p-trend`,'success');
         }catch(e){
