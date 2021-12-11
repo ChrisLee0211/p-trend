@@ -82,7 +82,7 @@ export class ScanerCtr implements Scaner {
         const baseName = path.basename(filePath);
         const splitPath = filePath.split(path.sep);
         if (rootFileBasicNames.includes(baseName)) {
-            return splitPath[splitPath.length - 2];
+            return `${splitPath[splitPath.length - 2]}${path.sep}${baseName}`;
         } else {
             return splitPath[splitPath.length - 1];
         }
@@ -285,11 +285,10 @@ export class ScanerCtr implements Scaner {
                             const isFolder = files[i].isDirectory();
                             const filePath = path.resolve(curNode.path,files[i].name);
                             const name = this.getModuleName(filePath);
-                            const modulePath = path.resolve(curNode.path, name.replace(path.extname(name),''));
                             const moduleId = this.getModuleId(filePath,name);
                             const nodeContent:FileTree = {
                                 name,
-                                path: modulePath,
+                                path: filePath,
                                 isFolder,
                                 children:[],
                                 moduleId,
