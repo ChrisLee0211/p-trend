@@ -23,14 +23,6 @@ interface FileStat {
 
 type Ifile = BasicNode & FileStat
 
-export interface Config {
-    entry:string,
-    port: number,
-    alias?:{
-        [key:string]:string
-    }
-}
-
 export interface FileTree extends BasicNode {
     /** 是否目录 */
     isFolder:boolean,
@@ -66,6 +58,13 @@ export interface Config {
     }
 }
 
+export interface Praser {
+    alias:Config['alias'];
+    npmDeps:string[];
+    externals:string[];
+    parseDependency(node:FileNode):Promise<string[]>;
+    collectImportNodes(code?:string):Promise<string[]>;
+}
 export interface Scaner {
     entry:string
     fileNodes:FileNode[]
@@ -73,7 +72,7 @@ export interface Scaner {
     dependenceNodes:DependenceNode[]
     markDependenceNode(target:DependenceNode, currentFileNode:FileNode):Promise<void>
     diff():FileNode[]
-    scan(effectFn?:(FileNode)=>Promise<string[]>, ctx?: any):Promise<void>
+    scan(effectFn?:(FileNode)=>Promise<string[]>, ctx?:Praser):Promise<void>
     collectDeps(currentFileNode:FileNode, depNode:DependenceNode):void
     buildFileTree():Promise<void>
     removeFileNode(path:string):Promise<boolean>

@@ -88,3 +88,8 @@ program
     });
 
 program.parse(process.argv);
+
+export default {
+    Scaner: ScanerCtr,
+    Parser: PraserCtr,
+};

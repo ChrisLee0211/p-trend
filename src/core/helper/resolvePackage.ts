@@ -1,7 +1,6 @@
 import {readFileContent, checkFileIsBuilt} from '../../utils/file';
-import * as path from 'path';
 
-export const resolvePackage =  async () => {
+export const resolvePackage =  async (): Promise<string[]> => {
     let deps:string[] = [];
     const packagePath = 'package.json';
     try{

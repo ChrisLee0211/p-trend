@@ -1,7 +1,8 @@
+import * as Koa from 'koa';
 import * as static_ from 'koa-static';
 import * as path from 'path';
 
-export const StaticMeddleware = () => {
+export const StaticMeddleware = ():Koa.Middleware => {
     return static_(
         path.join(__dirname, '../../../client/dist'),
         {

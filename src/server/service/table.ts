@@ -1,6 +1,5 @@
 import * as Koa from 'koa';
 import { FileNode, Scaner } from 'src/types/global';
-import { removeFile } from '../../utils/file';
 interface SearchQuery {
     name?:string,
     ctime?: [number, number],

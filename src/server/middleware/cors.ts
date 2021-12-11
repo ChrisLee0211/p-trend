@@ -1,7 +1,7 @@
 import * as Koa from 'koa';
 import * as URL from 'url';
 
-const cors = async (ctx:Koa.Context,next:Koa.Next) => {
+const cors = async (ctx:Koa.Context,next:Koa.Next):Promise<void> => {
     const origin = URL.parse(ctx.get('origin') || ctx.get('referer') || '');
     // 允许来自所有域名请求
     ctx.set("Access-Control-Allow-Origin", `${origin.protocol}//${origin.host}`);

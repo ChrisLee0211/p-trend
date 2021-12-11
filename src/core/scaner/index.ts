@@ -4,6 +4,7 @@ import {Stack} from '../../utils/stack';
 import { DependenceNode, FileNode, FileTree, Scaner } from 'src/types/global';
 import { enablePraseType, rootFileEnum } from '../constant';
 import { removeFile } from '../../utils/file';
+import { PraserCtr } from '../praser';
 
 /**
  * 模块扫描器
@@ -56,7 +57,7 @@ export class ScanerCtr implements Scaner {
      * @author chris lee
      * @Time 2021/07/20
      */
-    diff() {
+    diff():FileNode[] {
         const dependenceNodesPaths = [...this.dependenceNodes].map(d => d.path);
         const allFileNodes = [...this.fileNodes];
         const len = allFileNodes.length;
@@ -112,7 +113,7 @@ export class ScanerCtr implements Scaner {
      * @author chris lee
      * @Time 2021/07/20
      */
-    async scan(effectFn?:(FileNode)=>Promise<string[]>, ctx?: any){
+    async scan(effectFn?:(FileNode)=>Promise<string[]>, ctx?: PraserCtr):Promise<void>{
         try{
             const stack = new Stack();
             const files = await scanFolder(this.entry);
@@ -264,7 +265,7 @@ export class ScanerCtr implements Scaner {
     /**
      * 构建文件结构树
      */
-    async buildFileTree() {
+    async buildFileTree(): Promise<void> {
         const stack = new Stack();
         this.fileTree = {
             name: this.entry,

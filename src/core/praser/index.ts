@@ -2,17 +2,17 @@ import { readFileContent } from "../../utils/file";
 import {parse} from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as path from 'path';
-import { Config, FileNode } from "../../types/global";
+import { Config, FileNode, Praser } from "../../types/global";
 import { enablePraseType, rootFileEnum } from "../constant";
 
-function isAliasExist(alias:any): alias is {[k:string]:string} {
-        if(Object.keys(alias).length) return true;
+function isAliasExist(alias:Config['alias']): alias is {[k:string]:string} {
+        if(Object.keys(alias??{}).length) return true;
         return false;
 }
 /**
  * 依赖路径解析器
  */
-export class PraserCtr {
+export class PraserCtr implements Praser {
     alias:Config['alias'] = {}
     npmDeps:string[] = []
     externals:string[] = []
