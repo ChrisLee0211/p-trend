@@ -17,7 +17,7 @@ class Server {
         app.use(dataSetter_1.dataSetter(scaner, entry, port));
         router_1.default(app);
         app.listen(port);
-        console.log(`listen in port ${port}`);
+        console.log(`listen in port: ${port}`);
         this.app = app;
         this.scaner = scaner;
         this.entry = entry;

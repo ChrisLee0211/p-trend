@@ -22,7 +22,7 @@ export class Server{
         app.use(dataSetter(scaner,entry,port));
         routerMount(app);
         app.listen(port); 
-        console.log(`listen in port ${port}`);
+        console.log(`listen in port: ${port}`);
         this.app = app;
         this.scaner = scaner;
         this.entry = entry;

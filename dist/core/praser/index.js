@@ -91,9 +91,6 @@ class PraserCtr {
         // todo: 根据目前文件路径和相对路径拼接出绝对路径
         for (let i = 0; i < depPaths.length; i++) {
             const dependencePath = depPaths[i];
-            // 如果解析的路径名最后名字和自身一样，则为'xxx'的路径，归类为node_module，不在格式化
-            if (path.basename(dependencePath) === dependencePath)
-                continue;
             const splitPath = dependencePath.split(path.sep);
             // 先判断有没有路径别名
             if (aliasKey.length) {
