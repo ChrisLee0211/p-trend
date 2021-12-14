@@ -32,7 +32,6 @@ class ScanerCtr {
      * @author chris lee
      * @Time 2021/07/20
      * @update 2021/07/25 增加对依赖节点的文件大小、修改时间等记录
-     * @TODO depNode的path有问题，需要排查
      */
     markDependenceNode(target, currentFileNode) {
         return __awaiter(this, void 0, void 0, function* () {

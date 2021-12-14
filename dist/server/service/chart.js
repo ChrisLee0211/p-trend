@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const stack_1 = require("../../utils/stack");
 const path = require("path");
+const sort_1 = require("../../utils/sort");
 function getFileTreeSizeList(tree) {
     const result = [];
     if (!tree)
@@ -130,10 +131,14 @@ class ChartService {
             const fileNodes = scaner.fileNodes.map((curNode) => ({
                 fileName: curNode.name,
                 filePath: curNode.path,
-                deps: curNode.deps
+                deps: curNode.deps,
+                depsLength: curNode.deps.length,
             }));
+            const sortByDeps = sort_1.sortObject(fileNodes, 'depsLength', 'down').reverse();
             ctx.response.body = {
-                nodes: fileNodes.slice(0, limit),
+                nodes: sortByDeps.slice(0, limit),
+                allNodes: fileNodes,
+                sort: sortByDeps,
                 limit
             };
             yield next();

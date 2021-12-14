@@ -2,6 +2,7 @@ import * as Koa from 'koa';
 import { DependenceNode, FileNode, FileTree, Scaner } from 'src/types/global';
 import { Stack } from '../../utils/stack';
 import * as path from 'path';
+import { sortObject } from '../../utils/sort';
 
 function getFileTreeSizeList(tree: FileTree | null):FileSizeChartItem[] {
     const result:FileSizeChartItem[] = [];
@@ -132,10 +133,15 @@ class ChartService {
         const fileNodes = scaner.fileNodes.map((curNode) => ({
             fileName: curNode.name,
             filePath: curNode.path,
-            deps: curNode.deps
+            deps: curNode.deps,
+            depsLength: curNode.deps.length,
         }));
+        // TODO：Sort方法忘记实现降序了
+        const sortByDeps = sortObject(fileNodes,'depsLength', 'down').reverse();
         ctx.response.body = {
-            nodes: fileNodes.slice(0,limit),
+            nodes: sortByDeps.slice(0,limit),
+            allNodes: fileNodes,
+            sort:sortByDeps,
             limit
         };
         await next();
