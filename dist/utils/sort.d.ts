@@ -6,6 +6,5 @@
  * @returns {array}
  */
 declare type sortConfig = 'up' | 'down';
-declare type arrayObject = Array<any>;
-export declare const sortObject: <T extends arrayObject>(arr: T, target: string, sort: sortConfig) => T;
+export declare const sortObject: <T extends any[]>(arr: T, target: string, sort: sortConfig) => T;
 export {};

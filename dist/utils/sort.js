@@ -22,12 +22,23 @@ exports.sortObject = (arr, target, sort) => {
             if (isObj && isRealKey) {
                 const len = targetArr.length;
                 for (let i = 0; i < len - 1; i++) {
-                    let min = i;
-                    for (let j = i + 1; j < len; j++) {
-                        if (targetArr[j][target] < targetArr[min][target]) {
-                            min = j;
+                    if (sort === 'up') {
+                        let min = i;
+                        for (let j = i + 1; j < len; j++) {
+                            if (targetArr[j][target] < targetArr[min][target]) {
+                                min = j;
+                            }
+                            [targetArr[i], targetArr[min]] = [targetArr[min], targetArr[i]];
                         }
-                        [targetArr[i], targetArr[min]] = [targetArr[min], targetArr[i]];
+                    }
+                    else {
+                        let max = i;
+                        for (let j = i + 1; j < len; j++) {
+                            if (targetArr[j][target] > targetArr[max][target]) {
+                                max = j;
+                            }
+                            [targetArr[i], targetArr[max]] = [targetArr[max], targetArr[i]];
+                        }
                     }
                 }
                 result = [...targetArr];

@@ -134,7 +134,7 @@ class ChartService {
                 deps: curNode.deps,
                 depsLength: curNode.deps.length,
             }));
-            const sortByDeps = sort_1.sortObject(fileNodes, 'depsLength', 'down').reverse();
+            const sortByDeps = sort_1.sortObject(fileNodes, 'depsLength', 'down');
             ctx.response.body = {
                 nodes: sortByDeps.slice(0, limit),
                 allNodes: fileNodes,
@@ -155,8 +155,9 @@ class ChartService {
                 filePath: curNode.path,
                 reference: curNode.reference.length
             }));
+            const sortByReference = sort_1.sortObject(fileNodes, 'reference', 'down');
             ctx.response.body = {
-                nodes: fileNodes.slice(0, limit),
+                nodes: sortByReference.slice(0, limit),
                 limit
             };
             yield next();

@@ -136,8 +136,7 @@ class ChartService {
             deps: curNode.deps,
             depsLength: curNode.deps.length,
         }));
-        // TODO：Sort方法忘记实现降序了
-        const sortByDeps = sortObject(fileNodes,'depsLength', 'down').reverse();
+        const sortByDeps = sortObject(fileNodes,'depsLength', 'down');
         ctx.response.body = {
             nodes: sortByDeps.slice(0,limit),
             allNodes: fileNodes,
@@ -156,8 +155,9 @@ class ChartService {
             filePath: curNode.path,
             reference: curNode.reference.length
         }));
+        const sortByReference = sortObject(fileNodes,'reference', 'down');
         ctx.response.body = {
-            nodes: fileNodes.slice(0,limit),
+            nodes: sortByReference.slice(0,limit),
             limit
         };
         await next();

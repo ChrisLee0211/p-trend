@@ -6,8 +6,7 @@
  * @returns {array}
  */
  type sortConfig = 'up' |'down'
- type arrayObject = Array<any>
- export const sortObject = <T extends arrayObject>(arr:T,target:string,sort:sortConfig):T => {
+ export const sortObject = <T extends any[]>(arr:T,target:string,sort:sortConfig):T => {
      let result:T;
      const targetArr:Array<any> = [...arr];
      //判断是否数组
@@ -27,12 +26,22 @@
              if(isObj&&isRealKey){
                  const len:number = targetArr.length;
                  for(let i=0;i<len-1;i++){
-                     let min:number = i;
-                     for(let j:number = i+1;j<len;j++){
-                         if(targetArr[j][target] < targetArr[min][target] ){
-                             min = j;
+                     if (sort === 'up') {
+                         let min:number = i;
+                         for(let j:number = i+1;j<len;j++){
+                             if(targetArr[j][target] < targetArr[min][target] ){
+                                 min = j;
+                             }
+                             [targetArr[i],targetArr[min]] = [targetArr[min],targetArr[i]];
                          }
-                         [targetArr[i],targetArr[min]] = [targetArr[min],targetArr[i]];
+                     } else {
+                         let max:number = i;
+                         for(let j:number = i+1; j < len; j++) {
+                            if(targetArr[j][target] > targetArr[max][target] ){
+                                max = j;
+                            }
+                            [targetArr[i],targetArr[max]] = [targetArr[max],targetArr[i]];
+                         }
                      }
                  }
                  result = [...targetArr] as T;
