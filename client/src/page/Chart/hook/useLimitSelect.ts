@@ -14,10 +14,10 @@ export const useLimitSelect = () => {
             label: '前15',
             value:15,
         },
-    ]
+    ];
     const value = ref(limitOptions[0].value);
     return {
         value,
         limitOptions
-    }
-}
+    };
+};

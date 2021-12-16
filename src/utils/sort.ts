@@ -5,7 +5,7 @@
  * @param sort:排序的顺序 up => 升序 | down => 降序
  * @returns {array}
  */
- type sortConfig = 'up' |'down'
+ export type sortConfig = 'up' |'down'
  export const sortObject = <T extends any[]>(arr:T,target:string,sort:sortConfig):T => {
      let result:T;
      const targetArr:Array<any> = [...arr];

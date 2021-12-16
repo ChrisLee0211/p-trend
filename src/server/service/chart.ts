@@ -1,8 +1,8 @@
 import * as Koa from 'koa';
-import { DependenceNode, FileNode, FileTree, Scaner } from 'src/types/global';
+import { FileNode, FileTree, Scaner } from 'src/types/global';
 import { Stack } from '../../utils/stack';
 import * as path from 'path';
-import { sortObject } from '../../utils/sort';
+import { sortObject, sortConfig } from '../../utils/sort';
 
 function getFileTreeSizeList(tree: FileTree | null):FileSizeChartItem[] {
     const result:FileSizeChartItem[] = [];
@@ -129,6 +129,7 @@ class ChartService {
     async getDependenceChart(ctx:Koa.Context,next:Koa.Next):Promise<void> {
         const query = ctx.query;
         const limit = Number(query?.limit??10);
+        const sort = (String(query.sort)?? 'down') as sortConfig;
         const scaner = ctx.state.scaner as Scaner;
         const fileNodes = scaner.fileNodes.map((curNode) => ({
             fileName: curNode.name,
@@ -136,7 +137,7 @@ class ChartService {
             deps: curNode.deps,
             depsLength: curNode.deps.length,
         }));
-        const sortByDeps = sortObject(fileNodes,'depsLength', 'down');
+        const sortByDeps = sortObject(fileNodes,'depsLength', sort);
         ctx.response.body = {
             nodes: sortByDeps.slice(0,limit),
             allNodes: fileNodes,
@@ -149,13 +150,14 @@ class ChartService {
     async getReferenceChart(ctx:Koa.Context,next:Koa.Next):Promise<void> {
         const query = ctx.query;
         const limit = Number(query?.limit??10);
+        const sort = (String(query.sort)?? 'down') as sortConfig;
         const scaner = ctx.state.scaner as Scaner;
         const fileNodes = scaner.dependenceNodes.map((curNode) => ({
             fileName: curNode.name,
             filePath: curNode.path,
             reference: curNode.reference.length
         }));
-        const sortByReference = sortObject(fileNodes,'reference', 'down');
+        const sortByReference = sortObject(fileNodes,'reference', sort);
         ctx.response.body = {
             nodes: sortByReference.slice(0,limit),
             limit

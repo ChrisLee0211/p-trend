@@ -106,7 +106,6 @@ export default defineComponent({
         curNode.id = `${curNode.path}-${level}`;
        }
       };
-      // console.log('root ===>', {...root});
       return root
     }
 
@@ -188,7 +187,6 @@ export default defineComponent({
     }
     onFetchResponse((res) => {
       if (res.status === 200) {
-        loading.value = false;
         graphData.value = formatTreeDate(data.value.tree, data.value.entry);
       }
     });
@@ -264,10 +262,13 @@ export default defineComponent({
             }
             return baseConfig;
           });
+          graphIns.value.on('afterlayout', evt => {
+            loading.value = false;
+            isFirstRender.value = false;
+          })
           graphIns.value.data(graphData.value as unknown as TreeGraphData);
           graphIns.value.render();
           graphIns.value.fitView();
-          isFirstRender.value = false;
         });
       }
     });

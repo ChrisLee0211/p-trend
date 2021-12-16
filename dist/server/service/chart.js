@@ -123,10 +123,11 @@ class ChartService {
         });
     }
     getDependenceChart(ctx, next) {
-        var _a;
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             const query = ctx.query;
             const limit = Number((_a = query === null || query === void 0 ? void 0 : query.limit) !== null && _a !== void 0 ? _a : 10);
+            const sort = ((_b = String(query.sort)) !== null && _b !== void 0 ? _b : 'down');
             const scaner = ctx.state.scaner;
             const fileNodes = scaner.fileNodes.map((curNode) => ({
                 fileName: curNode.name,
@@ -134,7 +135,7 @@ class ChartService {
                 deps: curNode.deps,
                 depsLength: curNode.deps.length,
             }));
-            const sortByDeps = sort_1.sortObject(fileNodes, 'depsLength', 'down');
+            const sortByDeps = sort_1.sortObject(fileNodes, 'depsLength', sort);
             ctx.response.body = {
                 nodes: sortByDeps.slice(0, limit),
                 allNodes: fileNodes,
@@ -145,17 +146,18 @@ class ChartService {
         });
     }
     getReferenceChart(ctx, next) {
-        var _a;
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
             const query = ctx.query;
             const limit = Number((_a = query === null || query === void 0 ? void 0 : query.limit) !== null && _a !== void 0 ? _a : 10);
+            const sort = ((_b = String(query.sort)) !== null && _b !== void 0 ? _b : 'down');
             const scaner = ctx.state.scaner;
             const fileNodes = scaner.dependenceNodes.map((curNode) => ({
                 fileName: curNode.name,
                 filePath: curNode.path,
                 reference: curNode.reference.length
             }));
-            const sortByReference = sort_1.sortObject(fileNodes, 'reference', 'down');
+            const sortByReference = sort_1.sortObject(fileNodes, 'reference', sort);
             ctx.response.body = {
                 nodes: sortByReference.slice(0, limit),
                 limit

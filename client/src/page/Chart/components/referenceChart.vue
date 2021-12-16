@@ -4,15 +4,27 @@
     <div class="chart-tool">
         <n-space>
         <n-select size="small" v-model:value="limit" :options="limitOptions" />
+        <n-radio-group v-model:value="sortType" name="radiogroup">
+        <n-space>
+          <n-radio
+            v-for="item in sortOptions"
+            :key="item.value"
+            :value="item.value"
+          >
+            {{ item.label }}
+          </n-radio>
+        </n-space>
+      </n-radio-group>
         </n-space>
     </div>
 </template>
 <script lang="ts">
-import { defineComponent, ref, computed, watch, } from 'vue'
+import { defineComponent, ref, computed, } from 'vue'
 import { useFetch } from "@vueuse/core";
-import { NSpace, NSelect} from 'naive-ui';
+import { NSpace, NSelect, NRadio, NRadioGroup} from 'naive-ui';
 import { Column, ColumnOptions } from '@antv/g2plot';
 import { useLimitSelect } from '../hook/useLimitSelect';
+import { useSortTypeRadio } from "../hook/useSortTypeRadio";
 import { useAutoFitView } from '../hook/useAutoFitView';
 
 interface ReferenceNode {
@@ -25,13 +37,16 @@ export default defineComponent({
     name: 'referenceChart',
     components: {
         NSpace,
-        NSelect
+        NSelect,
+        NRadio, 
+        NRadioGroup
     },
     setup() {
         const chartRef = ref<HTMLElement>();
         const chartIns = ref<Column>();
         const {value: limit, limitOptions} = useLimitSelect();
-        const getFileDepsUrl = computed(() => `http://localhost:${window.preloadState.port}/chart/reference?limit=${limit.value}`)
+        const { value: sortType, sortOptions } = useSortTypeRadio();
+        const getFileDepsUrl = computed(() => `http://localhost:${window.preloadState.port}/chart/reference?limit=${limit.value}&sort=${sortType.value}`)
         const { onFetchResponse, data, onFetchError } = useFetch<{nodes:ReferenceNode[]}>(getFileDepsUrl, { refetch:true }).json<{nodes:ReferenceNode[]}>();
         const chartData = computed(() => {
             if(data.value && data.value.nodes) {
@@ -69,7 +84,9 @@ export default defineComponent({
         return {
             chartRef,
             limitOptions,
-            limit
+            limit,
+            sortType,
+            sortOptions,
         }
     },
 })
