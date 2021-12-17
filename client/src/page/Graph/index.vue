@@ -5,14 +5,23 @@
         <div class="graph-tools">
           <div class="graph-tools-panel">
             <div class="graph-tools-panel-item">
-                图类型：
-                <n-radio-group v-model:value="selectGraphType" name="radiogroup">
-                  <n-space>
-                    <n-radio v-for="item in graphType" :key="item.value" :value="item.value">
-                      {{ item.label }}
-                    </n-radio>
-                  </n-space>
-                </n-radio-group>
+              <div class="graph-tools-panel-item-main" >
+                  图类型：
+                  <n-radio-group v-model:value="selectGraphType" name="radiogroup">
+                    <n-space>
+                      <n-radio v-for="item in graphType" :key="item.value" :value="item.value">
+                        {{ item.label }}
+                      </n-radio>
+                    </n-space>
+                  </n-radio-group>
+              </div>
+              <div class="graph-tools-panel-item-main"> 
+                当前目录：
+                <n-tree-select
+                :options="[]"
+                default-value="Drive My Car"
+              />
+              </div>
             </div>
             <div class="graph-tools-panel-item">
               依赖标记：
@@ -40,7 +49,7 @@ import G6, {
   Tooltip,
 } from "@antv/g6";
 import { useFetch } from "@vueuse/core";
-import { NSpin,NRadio, NRadioGroup,NSwitch } from "naive-ui";
+import { NSpin,NRadio, NRadioGroup,NSwitch, NTreeSelect } from "naive-ui";
 import { useMiniMap } from "./hook/useMiniMap";
 import { useTooltip } from "./hook/useTooltip"; 
 import { useResizeObserver, useDebounceFn } from "@vueuse/core";
@@ -48,7 +57,7 @@ import { useResizeObserver, useDebounceFn } from "@vueuse/core";
 
 export default defineComponent({
   name: "Graph",
-  components: { NSpin,NRadio, NRadioGroup, NSwitch },
+  components: { NSpin,NRadio, NRadioGroup, NSwitch, NTreeSelect },
   setup() {
     const loading = ref(true);
     const isFirstRender = ref(true);
@@ -358,6 +367,16 @@ export default defineComponent({
         box-sizing: border-box;
         &-item{
           margin: 4px 0px;
+          display: flex;
+          width: 100%;
+          align-items: center;
+          &-main {
+            margin: 0 4px;
+            display: flex;
+            flex:1;
+            white-space: nowrap;
+            align-items: center;
+          }
         }
       }
     }
