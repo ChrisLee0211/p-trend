@@ -1,4 +1,6 @@
-import { TreeGraphData } from "@antv/g6";
+import { breadthFirstSearch } from "@antv/algorithm";
+import { GraphData } from "@antv/algorithm/lib/types";
+import { TreeGraph, TreeGraphData, Algorithm, Item} from "@antv/g6";
 
 /**
      * 格式化扁平数组为树结构方法，因为每个模块名称有可能相同，所以不能直接作为id，需要随机分配
@@ -176,3 +178,35 @@ export const formatDirOptions = (tree:FileTree) => {
     return [root];
 };
 
+const serachMap = new Map<string, TreeGraphData>();
+
+/**
+ * 根据当前路径深度遍历树找到对应树节点
+ * @param path 路径
+ * @param graph 树图数据
+ * @returns 
+ * @author chris lee
+ * @Time 2021/12/20
+ */
+export const findGraphNode = (path:string, graphData: TreeGraphData): TreeGraphData | null => {
+    const cache = serachMap.get(path);
+    if (cache) {
+        return cache;
+    }
+   const data = graphData;
+   let result:TreeGraphData | null = null;
+   const stack = [];
+   stack.push(data);
+   while(stack.length) {
+       const currentNode = stack.pop()  as TreeGraphData;
+       if(currentNode.path === path) {
+           result = currentNode;
+           serachMap.set(path, currentNode);
+           break;
+       }
+       if (currentNode.children?.length) {
+           stack.push(...currentNode.children);
+       }
+   }
+   return result;
+};

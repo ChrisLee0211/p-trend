@@ -19,7 +19,9 @@
                 当前目录：
                 <n-tree-select
                 :options="dirOpts"
-                default-value="Drive My Car"
+                virtual-scroll
+                :value="dirSrc"
+                @update:value="handleChangeDir"
               />
               </div>
             </div>
@@ -47,11 +49,11 @@ import G6, {
   NodeConfig,
 } from "@antv/g6";
 import { useFetch } from "@vueuse/core";
-import { NSpin,NRadio, NRadioGroup,NSwitch, NTreeSelect } from "naive-ui";
+import { NSpin,NRadio, NRadioGroup,NSwitch, NTreeSelect, useNotification } from "naive-ui";
 import { useMiniMap } from "./hook/useMiniMap";
 import { useTooltip } from "./hook/useTooltip"; 
 import { useResizeObserver, useDebounceFn } from "@vueuse/core";
-import { formatDepsData, formatNodesData, formatTreeDate, formatDirOptions} from './helpers'
+import { formatDepsData, formatNodesData, formatTreeDate, formatDirOptions, findGraphNode} from './helpers'
 
 interface TreeOpts {
   label: string;
@@ -64,6 +66,8 @@ export default defineComponent({
   name: "Graph",
   components: { NSpin,NRadio, NRadioGroup, NSwitch, NTreeSelect },
   setup() {
+    const notice = useNotification();
+
     const loading = ref(true);
     const isFirstRender = ref(true);
     const graphRef = ref<HTMLDivElement | null>(null);
@@ -86,7 +90,6 @@ export default defineComponent({
         if (dirOpts.value.length) {
           dirSrc.value = dirOpts.value[0].key
         }
-        console.log('dirOpts ===>', dirOpts.value);
       }
     });
 
@@ -205,22 +208,42 @@ export default defineComponent({
       graphIns.value?.fitView()
     })
 
+
     const showDeps = ref(false);
     const disableShowDeps = computed(() => {
       return selectGraphType.value !== 'project'
     })
     watch(showDeps, (newVal) => {
-      let targetTreeData = graphData.value;
+      let targetTreeData = graphIns.value?.save();
       if(newVal === true) {
-        targetTreeData = formatDepsData(data.value.tree, data.value.deps, data.value.entry)
+        targetTreeData = formatDepsData(targetTreeData as unknown as FileTree, data.value.deps, data.value.entry)
       } else {
-        targetTreeData = formatTreeDate(data.value.tree, data.value.entry)
+        targetTreeData = formatTreeDate(targetTreeData as unknown as FileTree, data.value.entry)
       }
       console.log('targetTreeData ===>', targetTreeData);
       graphIns.value?.changeData(targetTreeData);
       graphIns.value?.fitView()
     })
 
+  const handleChangeDir = (val:string) => {
+    try {
+      if (graphData.value && graphIns.value) {
+        const newData = findGraphNode(val,graphData.value);
+        if (newData) {
+          graphIns.value.changeData(newData)
+        } else {
+          throw new Error();
+        }
+      } else {
+        throw new Error();
+      }
+    }catch(e) {
+      notice.error({
+        meta: '警告',
+        content: '无法解析该目录'
+      })
+    }
+  }
     return {
       loading,
       graphRef,
@@ -229,6 +252,8 @@ export default defineComponent({
       showDeps,
       disableShowDeps,
       dirOpts,
+      dirSrc,
+      handleChangeDir
     };
   },
 });
