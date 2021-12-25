@@ -42,12 +42,12 @@
 使用npm安装:
 
 ```sh
-npm install p-trend
+npm install p-trend -g
 ```
 或使用yarn
 
 ```sh
-yarn install p-trend
+yarn global add p-trend
 ```
 ## 使用
 

@@ -1,11 +1,12 @@
 {
   "name": "p-trend",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "a tool to scan unuse module for your project",
   "main": "index.js",
   "author": "chris lee",
   "license": "MIT",
   "typings": "src/types/global.d.ts",
+  "homepage": "https://github.com/ChrisLee0211/p-trend",
   "scripts": {
     "test": "jest --no-cache --coverage",
     "fix": "eslint . --fix",
