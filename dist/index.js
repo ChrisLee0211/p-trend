@@ -11,8 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const program = require("commander");
-const path_1 = require("./utils/path");
-const file_1 = require("./utils/file");
 const configLoader_1 = require("./configLoader");
 const praser_1 = require("./core/praser");
 const scaner_1 = require("./core/scaner");
@@ -21,58 +19,19 @@ const log_1 = require("./utils/log");
 const resolvePackage_1 = require("./core/helper/resolvePackage");
 program.version("1.0.0");
 program
-    .command("analyst")
-    .option("-e --entry <entryPath>")
-    .option("-c --config <config>", "service config")
-    .option("-p --port <port>", "service port")
+    .option("-e --entry <entryPath>", "解析入口路径，默认为'./'")
+    .option("-c --config <config>", "配置文件路径, 默认不使用配置文件")
+    .option("-p --port <port>", "服务端口，默认为8080")
     .action((name, cmd) => __awaiter(void 0, void 0, void 0, function* () {
     log_1.log('正在初始化......', 'success');
-    const commandOptions = Object.keys(cmd._optionValues);
     let defaultConfig = {
         entry: './',
         port: 8080
     };
-    if (path_1.checkPathIsUseful('p-trend.config.js')) {
-        try {
-            const fullPath = path_1.concatPath(path_1.getCurrentPath(), 'p-trend.config.js');
-            const isExist = yield file_1.checkFileIsBuilt(fullPath);
-            if (isExist) {
-                const config = yield configLoader_1.configLoader(fullPath);
-                defaultConfig = Object.assign(Object.assign({}, defaultConfig), config);
-            }
-        }
-        catch (e) {
-            console.error(e);
-        }
-    }
-    if (commandOptions.includes('config')) {
-        const configPath = cmd._optionValues.config;
-        if (path_1.checkPathIsUseful(configPath)) {
-            try {
-                const fullPath = path_1.concatPath(path_1.getCurrentPath(), configPath);
-                const isExist = yield file_1.checkFileIsBuilt(fullPath);
-                if (!isExist) {
-                    throw new Error(`Can not find plugin conifg file by wrong path, please check if is correct`);
-                }
-                const config = yield configLoader_1.configLoader(fullPath);
-                defaultConfig = Object.assign(Object.assign({}, defaultConfig), config);
-            }
-            catch (e) {
-                console.error(e);
-            }
-        }
-        else {
-            throw new Error(`Can not find conifg file by wrong path, please check if is correct`);
-        }
-    }
-    if (commandOptions.includes('entry')) {
-        defaultConfig.entry = cmd._optionValues.entry;
-    }
-    if (commandOptions.includes('port')) {
-        defaultConfig.port = cmd._optionValues.port;
-    }
-    log_1.log('开始扫描项目', 'warning');
     try {
+        /** 解析默认配置 */
+        defaultConfig = yield configLoader_1.normalizeConfig(defaultConfig, cmd._optionValues);
+        log_1.log('开始扫描项目', 'warning');
         /** 解析外部依赖 */
         const externals = [];
         if (defaultConfig === null || defaultConfig === void 0 ? void 0 : defaultConfig.externals) {

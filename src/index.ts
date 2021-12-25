@@ -1,9 +1,7 @@
 #!/usr/bin/env node
 
 import * as program from "commander";
-import {checkPathIsUseful,concatPath,getCurrentPath} from './utils/path';
-import {checkFileIsBuilt} from './utils/file';
-import {configLoader} from './configLoader';
+import {normalizeConfig} from './configLoader';
 import {PraserCtr} from './core/praser';
 import {ScanerCtr} from './core/scaner';
 import {Server} from './server';
@@ -13,55 +11,19 @@ import {resolveExternals, resolvePackage} from './core/helper/resolvePackage';
 program.version("1.0.0");
 
 program
-    .command("analyst")
-    .option("-e --entry <entryPath>")
-    .option("-c --config <config>", "service config")
-    .option("-p --port <port>", "service port")
+    .option("-e --entry <entryPath>", "解析入口路径，默认为'./'")
+    .option("-c --config <config>", "配置文件路径, 默认不使用配置文件")
+    .option("-p --port <port>", "服务端口，默认为8080")
     .action(async(name,cmd) => {
         log('正在初始化......', 'success');
-        const commandOptions = Object.keys(cmd._optionValues);
         let defaultConfig:Config = {
             entry:'./',
             port:8080
         };
-        if (checkPathIsUseful('p-trend.config.js')) {
-            try{
-                const fullPath = concatPath(getCurrentPath(),'p-trend.config.js');
-                const isExist = await checkFileIsBuilt(fullPath);
-                if(isExist){
-                    const config = await configLoader(fullPath);
-                    defaultConfig = {...defaultConfig, ...config};
-                }
-            }catch(e){
-                console.error(e);
-            }
-        }
-        if(commandOptions.includes('config')) {
-            const configPath = cmd._optionValues.config as string;
-            if (checkPathIsUseful(configPath)) {
-                try{
-                    const fullPath = concatPath(getCurrentPath(),configPath);
-                    const isExist = await checkFileIsBuilt(fullPath);
-                    if(!isExist){
-                        throw new Error(`Can not find plugin conifg file by wrong path, please check if is correct`);
-                    }
-                    const config = await configLoader(fullPath);
-                    defaultConfig = {...defaultConfig, ...config};
-                }catch(e){
-                    console.error(e);
-                }
-            }else {
-                throw new Error(`Can not find conifg file by wrong path, please check if is correct`);
-            }
-        }
-        if(commandOptions.includes('entry')) {
-            defaultConfig.entry = cmd._optionValues.entry;
-        }
-        if(commandOptions.includes('port')) {
-            defaultConfig.port = cmd._optionValues.port;
-        }
-        log('开始扫描项目','warning');
         try{
+            /** 解析默认配置 */
+            defaultConfig = await normalizeConfig(defaultConfig,cmd._optionValues);
+            log('开始扫描项目','warning');
             /** 解析外部依赖 */
             const externals:string[] = [];
             if(defaultConfig?.externals) {
