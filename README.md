@@ -13,12 +13,20 @@
 
 >`p-trend`取自project & trend，即项目的趋势之意。
 
-如果你的项目有以下场景，或许你可以试试p-trend:
+如果你的项目有以下场景，或许你可以试试`p-trend`:
 
 - 多人协作一段时间后，发现项目内有大量重复轮子和废弃的功能代码，但不好排查
 - 准备技术文档或ppt时，需要对项目结构有一个清晰的图分析
 - 希望将无人或少人使用的lib进行整合但无从下手
 
+## 示例
+
+### 项目依赖树：
+![IMG](https://raw.githubusercontent.com/ChrisLee0211/self-utils-for-ts/master/src/assets/p-trend/graph.png)
+### 项目文件分析图表:
+![IMG](https://raw.githubusercontent.com/ChrisLee0211/self-utils-for-ts/master/src/assets/p-trend/chart.png)
+### 项目文件管理表格
+![IMG](https://raw.githubusercontent.com/ChrisLee0211/self-utils-for-ts/master/src/assets/p-trend/table.png)
 ## 目录
 
 - [安装](#安装)
