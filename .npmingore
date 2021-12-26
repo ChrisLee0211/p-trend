@@ -1,0 +1,7 @@
+.DS_Store
+.vscode
+client/src
+client/vite.config.ts
+client/public
+src
+test

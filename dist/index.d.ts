@@ -1,8 +1,2 @@
-#!/usr/bin/env node
-import { PraserCtr } from './core/praser';
-import { ScanerCtr } from './core/scaner';
-declare const _default: {
-    Scaner: typeof ScanerCtr;
-    Parser: typeof PraserCtr;
-};
-export default _default;
+export { ScanerCtr } from './core/scaner/index';
+export { PraserCtr } from './core/praser/index';
