@@ -10,7 +10,8 @@
       "module": "commonJs",
       "removeComments": false,
       "declaration": true,
-      "sourceMap": true,
+      "declarationDir": "./typings",
+      "sourceMap": false,
       "paths": {
         "@/*":["src/*"]
       },
@@ -25,9 +26,8 @@
       "moduleResolution": "node",
       "resolveJsonModule": true,
       "typeRoots": [                            /* 要包含的类型声明文件路径列表*/
-        "./typings",
         "./node_modules/@types",
-        "./src/types"
+        "src/types/global.ts"
         ],
     },
     "include": [

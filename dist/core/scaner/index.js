@@ -358,4 +358,3 @@ class ScanerCtr {
     }
 }
 exports.ScanerCtr = ScanerCtr;
-//# sourceMappingURL=index.js.map

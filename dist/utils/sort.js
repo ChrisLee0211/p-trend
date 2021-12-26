@@ -54,4 +54,3 @@ exports.sortObject = (arr, target, sort) => {
     }
     return result;
 };
-//# sourceMappingURL=sort.js.map

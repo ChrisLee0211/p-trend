@@ -107,4 +107,3 @@ exports.typeValidate = (obj, type, constant = "The value of target") => {
 exports.getVariableType = (obj) => {
     return Object.prototype.toString.call(obj);
 };
-//# sourceMappingURL=typeValidate.js.map

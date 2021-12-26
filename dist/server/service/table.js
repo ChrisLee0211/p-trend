@@ -114,4 +114,3 @@ class TableService {
     }
 }
 exports.default = new TableService();
-//# sourceMappingURL=table.js.map

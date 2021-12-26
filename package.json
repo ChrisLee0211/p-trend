@@ -2,10 +2,10 @@
   "name": "p-trend",
   "version": "1.0.3",
   "description": "a tool to scan unuse module for your project",
-  "main": "index.js",
+  "main": "src/index.ts",
   "author": "chris lee",
   "license": "MIT",
-  "typings": "src/types/global.d.ts",
+  "typings": "typings",
   "homepage": "https://github.com/ChrisLee0211/p-trend",
   "scripts": {
     "test": "jest --no-cache --coverage",
@@ -16,6 +16,7 @@
     "p-trend": "./dist/bin.js"
   },
   "devDependencies": {
+    "@types/babel__core": "^7.1.17",
     "@types/jest": "^26.0.4",
     "@types/koa": "^2.13.4",
     "@types/koa-bodyparser": "^4.3.3",

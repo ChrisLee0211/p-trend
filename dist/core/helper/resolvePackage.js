@@ -32,4 +32,3 @@ exports.resolvePackage = () => __awaiter(void 0, void 0, void 0, function* () {
 exports.resolveExternals = (obj) => {
     return Object.values(obj);
 };
-//# sourceMappingURL=resolvePackage.js.map

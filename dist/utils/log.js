@@ -37,4 +37,3 @@ exports.progressBar = (desc, num, total = 100) => {
 exports.clearLog = () => {
     sLog.stdout.clear();
 };
-//# sourceMappingURL=log.js.map

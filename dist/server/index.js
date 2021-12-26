@@ -24,4 +24,3 @@ class Server {
     }
 }
 exports.Server = Server;
-//# sourceMappingURL=index.js.map

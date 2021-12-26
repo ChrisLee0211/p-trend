@@ -17,4 +17,3 @@ const routerMount = (app) => {
     }
 };
 exports.default = routerMount;
-//# sourceMappingURL=index.js.map

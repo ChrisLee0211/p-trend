@@ -54,4 +54,3 @@ const cors = (ctx, next) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.default = cors;
-//# sourceMappingURL=cors.js.map

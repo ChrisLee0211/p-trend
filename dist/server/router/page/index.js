@@ -5,4 +5,3 @@ const Router = require("koa-router");
 const router = new Router();
 router.get('/p-trend', render_1.default.renderHtml);
 exports.default = router;
-//# sourceMappingURL=index.js.map

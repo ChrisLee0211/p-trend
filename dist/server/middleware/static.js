@@ -16,4 +16,3 @@ exports.StaticMeddleware = () => {
         }
     });
 };
-//# sourceMappingURL=static.js.map

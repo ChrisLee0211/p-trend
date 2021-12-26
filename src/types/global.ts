@@ -1,8 +1,3 @@
-declare module 'koa' {
-    namespace Application {
-    }
-}
-
 interface BasicNode {
     /** 文件名 */
     name: string;

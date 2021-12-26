@@ -48,4 +48,3 @@ exports.dataSetter = (scaner, entry, port) => {
         yield next();
     });
 };
-//# sourceMappingURL=dataSetter.js.map

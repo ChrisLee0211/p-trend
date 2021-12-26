@@ -178,4 +178,3 @@ class ChartService {
     }
 }
 exports.default = new ChartService();
-//# sourceMappingURL=chart.js.map

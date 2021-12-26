@@ -1,3 +1,4 @@
+/// <reference types="koa-bodyparser" />
 import * as Koa from 'koa';
 import { ScanerCtr } from '../core/scaner/index';
 export declare class Server {

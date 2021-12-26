@@ -204,4 +204,3 @@ function readFileBasicInfo(filePath) {
     });
 }
 exports.readFileBasicInfo = readFileBasicInfo;
-//# sourceMappingURL=file.js.map

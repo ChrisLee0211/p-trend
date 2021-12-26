@@ -49,4 +49,3 @@ exports.parseRootPath = (pathname) => {
 exports.checkFileType = (pathname, matchs) => {
     return matchs.includes(path.extname(pathname));
 };
-//# sourceMappingURL=path.js.map

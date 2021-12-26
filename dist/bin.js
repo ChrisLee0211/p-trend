@@ -59,4 +59,3 @@ program
     }
 }));
 program.parse(process.argv);
-//# sourceMappingURL=bin.js.map

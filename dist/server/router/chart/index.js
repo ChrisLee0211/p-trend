@@ -8,4 +8,3 @@ router.get('/chart/deps', chart_1.default.getDependenceChart);
 router.get('/chart/reference', chart_1.default.getReferenceChart);
 router.get('/chart/types', chart_1.default.getTypeChart);
 exports.default = router;
-//# sourceMappingURL=index.js.map

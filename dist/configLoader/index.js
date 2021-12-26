@@ -77,4 +77,3 @@ exports.normalizeConfig = (defaultConfig, cmdOptions) => __awaiter(void 0, void 
     }
     return result;
 });
-//# sourceMappingURL=index.js.map

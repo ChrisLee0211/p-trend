@@ -6,4 +6,3 @@ const router = new Router();
 router.get('/table', table_1.default.getTableData);
 router.post('/table/delete', table_1.default.removeFile);
 exports.default = router;
-//# sourceMappingURL=index.js.map

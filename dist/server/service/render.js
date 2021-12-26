@@ -42,4 +42,3 @@ class RenderService {
     }
 }
 exports.default = new RenderService();
-//# sourceMappingURL=render.js.map
