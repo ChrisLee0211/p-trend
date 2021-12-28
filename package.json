@@ -8,6 +8,7 @@
   "typings": "typings",
   "homepage": "https://github.com/ChrisLee0211/p-trend",
   "scripts": {
+    "dev": "ts-node sample/index.ts",
     "test": "jest --no-cache --coverage",
     "fix": "eslint . --fix",
     "build": "tsc --build tsconfig.json"
