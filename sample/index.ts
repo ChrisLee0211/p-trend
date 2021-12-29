@@ -8,7 +8,9 @@ const defaultConfig = {
     entry:'src/',
     port:8080,
     externals:{},
-    alias: undefined,
+    alias: {
+        '@':'src'
+    },
 };
 
 const test = async () => {
