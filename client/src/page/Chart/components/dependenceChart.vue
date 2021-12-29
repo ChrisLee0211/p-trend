@@ -50,8 +50,6 @@ export default defineComponent({
     const chartData = computed(() => {
       if (data.value && data.value.nodes) {
         return data.value.nodes
-          .map((node) => ({ ...node, depCount: node.deps.length }))
-          .sort((a, b) => b.depCount - a.depCount);
       }
       return [];
     });
@@ -67,13 +65,13 @@ export default defineComponent({
           width: chartRef.value?.offsetWidth ?? 0,
           height: chartRef.value?.offsetHeight ?? 0,
           xField: "fileName",
-          yField: "depCount",
+          yField: "depsLength",
           padding: "auto",
           color: "#ff4d4d",
           appendPadding: 10,
           tooltip: {
             formatter(data) {
-              return { name: "依赖数量", value: `${data.depCount}` };
+              return { name: "依赖数量", value: `${data.depsLength}` };
             },
           },
         });

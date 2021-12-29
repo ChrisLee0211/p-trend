@@ -50,7 +50,7 @@ export default defineComponent({
         const { onFetchResponse, data, onFetchError } = useFetch<{nodes:ReferenceNode[]}>(getFileDepsUrl, { refetch:true }).json<{nodes:ReferenceNode[]}>();
         const chartData = computed(() => {
             if(data.value && data.value.nodes) {
-                return data.value.nodes.map((node) => ({...node})).sort((a,b) => b.reference - a.reference);
+                return data.value.nodes.map((node) => ({...node}));
             }
             return [];
         })
@@ -60,20 +60,46 @@ export default defineComponent({
         onFetchResponse(() => {
             if (chartIns.value) {
                 chartIns.value.changeData(chartData.value);
+                chartIns.value.update({})
             } else {
                 chartIns.value = new Column(chartRef.value as HTMLElement, {
                     data:chartData.value,
                     width: chartRef.value?.offsetWidth??0,
                     height: chartRef.value?.offsetHeight??0,
-                    xField: 'fileName',
+                    xField: 'filePath',
                     yField: 'reference',
                     padding:'auto',
                     appendPadding: 10,
                     color: '#40bf80',
                     tooltip: {
-                        formatter(data){
-                            return { name: '被引用次数', value: `${data.reference}` };
+                        customContent(title, data){
+                            const currentItem = data[0]?.data as ReferenceNode;
+                            if (!currentItem) return title;
+                            return `
+                                <div style="padding:12px;font-size:12px;max-width:120px">
+                                    <div style="margin-bottom:8px; display:flex">
+                                    <span>文件名:</span>
+                                    ${currentItem.fileName}
+                                    </div>
+                                    <div style="margin-bottom:8px; display:flex">
+                                    <span style="white-space: nowrap;">路径:</span>
+                                    <span style="word-break:break-word;">${currentItem.filePath}</span>
+                                    </div>
+                                    <div style="display:flex">
+                                    <span>被引用次数: </span>
+                                    ${currentItem.reference}
+                                    </div>
+                                </div>
+                            `
                         }
+                    },
+                    xAxis: {
+                        label: {
+                        formatter(text,item,index){
+                            const result = chartData.value[index]?.fileName;
+                            return result ?? text;
+                        }
+                        },
                     }
                 });
                 chartIns.value.render();

@@ -1,6 +1,6 @@
 {
   "name": "p-trend",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "a tool to scan unuse module for your project",
   "main": "src/index.ts",
   "author": "chris lee",
@@ -8,6 +8,7 @@
   "typings": "typings",
   "homepage": "https://github.com/ChrisLee0211/p-trend",
   "scripts": {
+    "dev": "ts-node sample/index.ts",
     "test": "jest --no-cache --coverage",
     "fix": "eslint . --fix",
     "build": "tsc --build tsconfig.json"
