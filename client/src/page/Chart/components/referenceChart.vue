@@ -72,26 +72,9 @@ export default defineComponent({
                     appendPadding: 10,
                     color: '#40bf80',
                     tooltip: {
-                        customContent(title, data){
-                            const currentItem = data[0]?.data as ReferenceNode;
-                            if (!currentItem) return title;
-                            return `
-                                <div style="padding:12px;font-size:12px;max-width:120px">
-                                    <div style="margin-bottom:8px; display:flex">
-                                    <span>文件名:</span>
-                                    ${currentItem.fileName}
-                                    </div>
-                                    <div style="margin-bottom:8px; display:flex">
-                                    <span style="white-space: nowrap;">路径:</span>
-                                    <span style="word-break:break-word;">${currentItem.filePath}</span>
-                                    </div>
-                                    <div style="display:flex">
-                                    <span>被引用次数: </span>
-                                    ${currentItem.reference}
-                                    </div>
-                                </div>
-                            `
-                        }
+                        formatter(data){
+                            return { name: '被引用次数', value: `${data.reference}` };
+                        },
                     },
                     xAxis: {
                         label: {
