@@ -35,7 +35,7 @@ export default defineComponent({
     NRadio,
     NRadioGroup,
   },
-  setup() {
+  setup(props, { emit }) {
     const chartRef = ref<HTMLElement>();
     const chartIns = ref<Column>();
     const { value: limit, limitOptions } = useLimitSelect();
@@ -49,7 +49,7 @@ export default defineComponent({
     }>(getFileDepsUrl, { refetch: true }).json<{ nodes: FileNode[] }>();
     const chartData = computed(() => {
       if (data.value && data.value.nodes) {
-        return data.value.nodes
+        return data.value.nodes;
       }
       return [];
     });
@@ -70,10 +70,19 @@ export default defineComponent({
           color: "#ff4d4d",
           appendPadding: 10,
           tooltip: {
+            showTitle: true,
+            title: "点击柱体以查看文件路径",
             formatter(data) {
               return { name: "依赖数量", value: `${data.depsLength}` };
             },
           },
+        });
+        chartIns.value.on("element:click", (param: any) => {
+          const data = param.data;
+          if (data.data) {
+            const path = data.data?.filePath;
+            emit("handleClick", path);
+          }
         });
         chartIns.value.render();
       }
