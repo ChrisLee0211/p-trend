@@ -141,14 +141,14 @@ export default defineComponent({
         positiveText: '删除',
         negativeText: '不删',
         onPositiveClick:() => {
-          return new Promise((resolve, reject) => {
+          return new Promise<void>((resolve, reject) => {
              axios
             .post(`http://localhost:${window.preloadState.port}/table/delete`, { path: record.path })
             .then((res) => {
               if (res.data.result) {
                 refreshTable();
               }
-                return resolve
+              resolve();
             });
           })
         }

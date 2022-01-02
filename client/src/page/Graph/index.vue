@@ -5,29 +5,36 @@
         <div class="graph-tools">
           <div class="graph-tools-panel">
             <div class="graph-tools-panel-item">
-              <div class="graph-tools-panel-item-main" >
-                  图类型：
-                  <n-radio-group v-model:value="selectGraphType" name="radiogroup">
-                    <n-space>
-                      <n-radio v-for="item in graphType" :key="item.value" :value="item.value">
-                        {{ item.label }}
-                      </n-radio>
-                    </n-space>
-                  </n-radio-group>
+              <div class="graph-tools-panel-item-main">
+                图类型：
+                <n-radio-group
+                  v-model:value="selectGraphType"
+                  name="radiogroup"
+                >
+                  <n-space>
+                    <n-radio
+                      v-for="item in graphType"
+                      :key="item.value"
+                      :value="item.value"
+                    >
+                      {{ item.label }}
+                    </n-radio>
+                  </n-space>
+                </n-radio-group>
               </div>
-              <div class="graph-tools-panel-item-main"> 
+              <div class="graph-tools-panel-item-main">
                 当前目录：
                 <n-tree-select
-                :options="dirOpts"
-                virtual-scroll
-                :value="dirSrc"
-                @update:value="handleChangeDir"
-              />
+                  :options="dirOpts"
+                  virtual-scroll
+                  :value="dirSrc"
+                  @update:value="handleChangeDir"
+                />
               </div>
             </div>
             <div class="graph-tools-panel-item">
               依赖标记：
-            <n-switch v-model:value="showDeps" :disabled="disableShowDeps" />
+              <n-switch v-model:value="showDeps" :disabled="disableShowDeps" />
             </div>
           </div>
         </div>
@@ -42,208 +49,166 @@
 </template>
 <script lang="ts">
 import { defineComponent, ref, nextTick, watch, computed } from "vue";
-import G6, {
-  Item,
-  TreeGraph,
-  TreeGraphData,
-  NodeConfig,
-} from "@antv/g6";
+import { TreeGraphData } from "@antv/g6";
 import { useFetch } from "@vueuse/core";
-import { NSpin,NRadio, NRadioGroup,NSwitch, NTreeSelect, useNotification } from "naive-ui";
+import {
+  NSpin,
+  NRadio,
+  NSpace,
+  NRadioGroup,
+  NSwitch,
+  NTreeSelect,
+  useNotification,
+} from "naive-ui";
 import { useMiniMap } from "./hook/useMiniMap";
-import { useTooltip } from "./hook/useTooltip"; 
+import { useTooltip } from "./hook/useTooltip";
 import { useResizeObserver, useDebounceFn } from "@vueuse/core";
-import { formatDepsData, formatNodesData, formatTreeDate, formatDirOptions, findGraphNode} from './helpers'
+import {
+  formatDepsData,
+  formatNodesData,
+  formatTreeDate,
+  formatDirOptions,
+  findGraphNode,
+} from "./helpers";
+import { useGraph } from "./hook/useGraph";
 
 interface TreeOpts {
   label: string;
   key: string;
-  children:Array<TreeOpts>;
-  [key:string]: any;
+  children: Array<TreeOpts>;
+  [key: string]: any;
 }
 
 export default defineComponent({
   name: "Graph",
-  components: { NSpin,NRadio, NRadioGroup, NSwitch, NTreeSelect },
+  components: { NSpin, NRadio, NRadioGroup, NSwitch, NTreeSelect,NSpace },
   setup() {
     const notice = useNotification();
 
-    const loading = ref(true);
-    const isFirstRender = ref(true);
+    /** 初始化图相关逻辑 */
     const graphRef = ref<HTMLDivElement | null>(null);
-    const graphIns = ref<TreeGraph | null>(null);
-    const [miniMap] = useMiniMap("miniMap",'miniMap');
-    const [tooltip] = useTooltip('tooltip');
+    const [miniMap] = useMiniMap("miniMap", "miniMap");
+    const [tooltip] = useTooltip("tooltip");
     const graphData = ref<TreeGraphData | null>(null);
-    const dirOpts = ref<TreeOpts[]>([]);
-    const dirSrc = ref('');
+    const {initGraph, graphIns, loading} = useGraph(graphRef)
     const { onFetchResponse, data } = useFetch<{
       nodes: FileNode[];
       entry: string;
       tree: FileTree;
-    }>(`http://localhost:${window.preloadState.port}/graph`, { method: "GET" }).json();
-
+    }>(`http://localhost:${window.preloadState.port}/graph`, {
+      method: "GET",
+    }).json();
     onFetchResponse((res) => {
       if (res.status === 200) {
         graphData.value = formatTreeDate(data.value.tree, data.value.entry);
-        dirOpts.value = formatDirOptions(data.value.tree) as unknown as TreeOpts[];
-        if (dirOpts.value.length) {
-          dirSrc.value = dirOpts.value[0].key
-        }
+        initGraph(graphData.value, [miniMap.value,tooltip.value]);
       }
     });
-
-    watch(graphData, (target) => {
-      if (target !== null && isFirstRender.value) {
-        nextTick(() => {
-          graphIns.value = new G6.TreeGraph({
-            container: graphRef.value as HTMLDivElement,
-            modes: {
-              default: [
-                {
-                  type: "collapse-expand",
-                  onChange: function onChange(item, collapsed) {
-                    const data = (item as Item).getModel();
-                    data.collapsed = collapsed;
-                    return true;
-                  },
-                },
-                "drag-canvas",
-                "zoom-canvas",
-              ],
-            },
-            defaultNode: {
-              size: 26,
-              anchorPoints: [
-                [0, 0.5],
-                [1, 0.5],
-              ],
-            },
-            defaultEdge: {
-              type: "cubic-horizontal",
-            },
-            plugins: [miniMap.value, tooltip.value],
-            layout: {
-              type: "compactBox",
-              direction: "LR",
-              getId: function getId(d: any) {
-                return d.id;
-              },
-              getHeight: function getHeight() {
-                return 20;
-              },
-              getWidth: function getWidth() {
-                return 20;
-              },
-              getVGap: function getVGap() {
-                return 10;
-              },
-              getHGap: function getHGap() {
-                return 100;
-              },
-            },
-          });
-          graphIns.value.node((node): Partial<NodeConfig> => {
-            let baseConfig: Partial<NodeConfig> = {
-              label: node.name as string,
-              labelCfg: {
-                offset: 10,
-                position:
-                  node.children && node.children.length > 0 ? "left" : "right",
-              },
-            }
-            if (node?.isDep) {
-              baseConfig = {
-                ...baseConfig,
-                style: {
-                  shadowBlur: 10,
-                  fill: '#1a414e',
-                  stroke: 'black'
-                },
-              }
-            }
-            return baseConfig;
-          });
-          graphIns.value.on('afterlayout', evt => {
-            loading.value = false;
-            isFirstRender.value = false;
-          })
-          graphIns.value.data(graphData.value as unknown as TreeGraphData);
-          graphIns.value.render();
-          graphIns.value.fitView();
-        });
-      }
-    });
-    const autoFitView = useDebounceFn((w:number,h:number) => {
+    const autoFitView = useDebounceFn((w: number, h: number) => {
       if (graphIns.value) {
-        graphIns.value.changeSize(w,h);
-        graphIns.value.fitView(20)
+        graphIns.value.changeSize(w, h);
+        graphIns.value.fitView(20);
       }
-    }, 100)
+    }, 100);
     useResizeObserver(graphRef, (entries) => {
-      const entry = entries[0]
-      const { width, height } = entry.contentRect
+      const entry = entries[0];
+      const { width, height } = entry.contentRect;
       autoFitView(width, height);
-    })
+    });
 
-    const selectGraphType = ref('project');
+    /** 视图维度类型 */
+    const selectGraphType = ref("project");
     const graphType = [
       {
-        label: '项目结构',
-        value: 'project'
+        label: "项目结构",
+        value: "project",
       },
       {
-        label: '模块结构',
-        value: 'module'
+        label: "模块结构",
+        value: "module",
+      },
+    ];
+    watch(selectGraphType, (newVal, oldVal) => {
+      if (newVal === "project") {
+        graphIns.value?.changeData(
+          formatTreeDate(data.value.tree, data.value.entry)
+        );
       }
-    ]
-    watch(selectGraphType, (newVal,oldVal) => {
-      if (newVal === 'project') {
-        graphIns.value?.changeData(formatTreeDate(data.value.tree, data.value.entry))
-      }
-      if (newVal === 'module') {
-        graphIns.value?.changeData(formatNodesData(data.value.nodes, data.value.entry));
+      if (newVal === "module") {
+        graphIns.value?.changeData(
+          formatNodesData(data.value.nodes, data.value.entry)
+        );
         showDeps.value = false;
       }
-      graphIns.value?.fitView()
-    })
+      graphIns.value?.fitView();
+    });
 
-
+    /** 依赖标记 */
     const showDeps = ref(false);
     const disableShowDeps = computed(() => {
-      return selectGraphType.value !== 'project'
-    })
+      return selectGraphType.value !== "project";
+    });
     watch(showDeps, (newVal) => {
-      let targetTreeData = graphIns.value?.save();
-      if(newVal === true) {
-        targetTreeData = formatDepsData(targetTreeData as unknown as FileTree, data.value.deps, data.value.entry)
-      } else {
-        targetTreeData = formatTreeDate(targetTreeData as unknown as FileTree, data.value.entry)
-      }
-      console.log('targetTreeData ===>', targetTreeData);
-      graphIns.value?.changeData(targetTreeData);
-      graphIns.value?.fitView()
-    })
+      nextTick(() => {
+        let targetTreeData = graphIns.value?.save();
+        if (newVal === true) {
+          targetTreeData = formatDepsData(
+            targetTreeData as unknown as FileTree,
+            data.value.deps,
+            data.value.entry
+          );
+        } else {
+          targetTreeData = formatTreeDate(
+            targetTreeData as unknown as FileTree,
+            data.value.entry
+          );
+        }
+        graphIns.value?.changeData(targetTreeData);
+        graphIns.value?.fitView();
+      });
+    });
 
-  const handleChangeDir = (val:string) => {
-    try {
-      if (graphData.value && graphIns.value) {
-        const newData = findGraphNode(val,graphData.value);
-        if (newData) {
-          graphIns.value.changeData(newData)
+    /** 目录选择器 */
+    const dirOpts = ref<TreeOpts[]>([]);
+    const dirSrc = ref("");
+    watch(graphData, () => {
+      if(graphData.value) {
+        dirOpts.value = formatDirOptions(
+          data.value.tree
+        ) as unknown as TreeOpts[];
+        if (dirOpts.value.length) {
+          dirSrc.value = dirOpts.value[0].key;
+        }
+      }
+    })
+    const handleChangeDir = (val: string) => {
+      try {
+        if (graphData.value && graphIns.value) {
+          let targetTreeData = findGraphNode(val, graphData.value);
+          // 是否开启依赖标记
+          if (targetTreeData) {
+            if (showDeps.value) {
+              targetTreeData = formatDepsData(
+                targetTreeData as unknown as FileTree,
+                data.value.deps,
+                data.value.entry
+              );
+            }
+            graphIns.value.changeData(targetTreeData);
+            graphIns.value?.fitView();
+          } else {
+            throw new Error();
+          }
         } else {
           throw new Error();
         }
-      } else {
-        throw new Error();
+      } catch (e) {
+        notice.error({
+          meta: "警告",
+          content: "无法解析该目录",
+        });
       }
-    }catch(e) {
-      notice.error({
-        meta: '警告',
-        content: '无法解析该目录'
-      })
-    }
-  }
+    };
     return {
       loading,
       graphRef,
@@ -253,7 +218,7 @@ export default defineComponent({
       disableShowDeps,
       dirOpts,
       dirSrc,
-      handleChangeDir
+      handleChangeDir,
     };
   },
 });
@@ -273,7 +238,7 @@ export default defineComponent({
       align-items: center;
       &-panel {
         width: 98%;
-        height:90%;
+        height: 90%;
         align-items: flex-start;
         box-shadow: 0px 0px 17px 1px #8080802e;
         display: flex;
@@ -281,7 +246,7 @@ export default defineComponent({
         flex-flow: column;
         border-radius: 10px;
         box-sizing: border-box;
-        &-item{
+        &-item {
           margin: 4px 0px;
           display: flex;
           width: 100%;
@@ -289,7 +254,7 @@ export default defineComponent({
           &-main {
             margin: 0 4px;
             display: flex;
-            flex:1;
+            flex: 1;
             white-space: nowrap;
             align-items: center;
           }
@@ -306,8 +271,8 @@ export default defineComponent({
       .graph-container {
         position: absolute;
         left: 0px;
-        right:0px;
-        top:0px;
+        right: 0px;
+        top: 0px;
         bottom: 0px;
       }
       #miniMap {

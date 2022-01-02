@@ -19,7 +19,7 @@ export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Data
             align:'center',
             render(row) {
                 const ctime = row?.ctime;
-                return ctime? formatTime(ctime) : 'none'
+                return ctime? formatTime(ctime) : 'none';
             }
         },
         {
@@ -28,7 +28,7 @@ export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Data
             align:'center',
             render(row) {
                 const utime = row?.utime;
-                return utime? formatTime(utime) : 'none'
+                return utime? formatTime(utime) : 'none';
             }
         },
         {
@@ -37,7 +37,7 @@ export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Data
             align:'center',
             render(row) {
                 const fileSize = row?.fileSize;
-                return fileSize ? formatFileSize(fileSize) : 'none'
+                return fileSize ? formatFileSize(fileSize) : 'none';
             }
         },
         {
@@ -45,7 +45,7 @@ export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Data
             key: 'deps',
             align:'center',
             render(row) {
-                return row.deps.length
+                return row.deps.length;
             }
         },
         {
@@ -86,8 +86,8 @@ export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Data
                             }
                         ),
                     ]
-                )
+                );
             }
         },
-    ]
-}
+    ];
+};

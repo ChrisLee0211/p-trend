@@ -37,7 +37,7 @@ export default defineComponent({
         NRadioGroup,
         NSelect
     },
-    setup() {
+    setup(props,{emit}) {
         const chartRef = ref<HTMLElement>();
         const chartIns = ref<Column>();
         const chartType = ref<'folder' | 'module'>('folder')
@@ -73,12 +73,21 @@ export default defineComponent({
                     color: '#a3a3c2',
                     appendPadding: 10,
                     tooltip: {
+                        showTitle:true,
+                        title: '点击柱体以查看文件路径',
                         formatter(data){
                             return { name: '文件大小', value: `${countFileSize(data.fileSize)}` };
                         }
                     }
                 });
                 chartIns.value.render();
+                chartIns.value.on('element:click',(param: any) => {
+                    const data = param.data;
+                    if (data.data) {
+                        const path = data.data?.filePath;
+                        emit('handleClick', path);
+                    }
+                })
             }
         });
         useAutoFitView<ColumnOptions, Column>(chartIns, chartRef);
