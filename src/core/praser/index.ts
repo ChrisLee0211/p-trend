@@ -4,6 +4,7 @@ import traverse from '@babel/traverse';
 import * as path from 'path';
 import { Config, FileNode, Praser } from "../../types/global";
 import { enablePraseType, rootFileEnum } from "../constant";
+import { collectImportNodes } from './swcParser';
 
 function isAliasExist(alias:Config['alias']): alias is {[k:string]:string} {
         if(Object.keys(alias??{}).length) return true;
@@ -39,7 +40,7 @@ export class PraserCtr implements Praser {
         if(enablePraseType.includes(path.extname(pathname)) === false) return result;
         try{
             const content = await readFileContent(pathname,{encoding:'utf8'}) as string;
-            const depPaths = await this.collectImportNodes(content);
+            const depPaths = await collectImportNodes(content);
             
             const depPathsWithoutNpmDeps = this.filterEnabledPath(depPaths);
             result = this.normalizePaths(depPathsWithoutNpmDeps, node);

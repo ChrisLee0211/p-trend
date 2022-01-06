@@ -4,7 +4,8 @@
  */
 import { Module,Argument } from "@swc/core/types";
 import { Visitor } from "@swc/core/Visitor.js";
-
+import { transform } from '@swc/core';
+ 
 type CollectFnType = (path:string) => void
 
  export class SWCVisitor extends Visitor {
@@ -59,3 +60,28 @@ type CollectFnType = (path:string) => void
          return m;
      }
  }
+
+ /**
+  * 利用swc换转代码期间借用visitor实例访问ast获取模块路径
+  * @param code 
+  * @returns 
+  * @author chris lee
+  * @Time 2022/01/06
+  */
+export const collectImportNodes = async (code?:string):Promise<string[]> => {
+    if(!code) return [];
+    const result:string[] = [];
+    const collectPath = (path:string) => {
+        result.push(path);
+    };
+    const prasePlugin = new SWCVisitor(collectPath);
+    const output = await transform(code, {
+        plugin: (m) => prasePlugin.visitProgram(m),
+        jsc:{
+            parser: {
+                syntax: 'typescript',
+            }
+        }
+    });
+    return result;
+};
