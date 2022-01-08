@@ -35,11 +35,12 @@ export declare class PraserCtr implements Praser {
      */
     private normalizePaths;
     /**
-     * 利用babel praser将目标代码转为ast后收集依赖
+     * 将目标代码转为ast后收集依赖
      * @param code 解析目标代码内容
      * @returns
      * @author chris lee
      * @Time 2021/07/20
+     * @update 2022/01/08 全面替换为swc实现编译收集
      */
     collectImportNodes(code?: string): Promise<string[]>;
 }
