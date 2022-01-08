@@ -1,9 +1,9 @@
 import { readFileContent } from "../../utils/file";
-import {parse} from '@babel/parser';
-import traverse from '@babel/traverse';
+import { transform } from '@swc/core';
 import * as path from 'path';
 import { Config, FileNode, Praser } from "../../types/global";
 import { enablePraseType, rootFileEnum } from "../constant";
+import { SWCVisitor } from './swcParser';
 
 function isAliasExist(alias:Config['alias']): alias is {[k:string]:string} {
         if(Object.keys(alias??{}).length) return true;
@@ -118,61 +118,25 @@ export class PraserCtr implements Praser {
     }
 
     /**
-     * 利用babel praser将目标代码转为ast后收集依赖
+     * 将目标代码转为ast后收集依赖
      * @param code 解析目标代码内容
      * @returns 
      * @author chris lee
      * @Time 2021/07/20
+     * @update 2022/01/08 全面替换为swc实现编译收集
      */
     async collectImportNodes(code?:string):Promise<string[]> {
         if(!code) return [];
         const result:string[] = [];
-            const ast = parse(code,{plugins:['typescript','jsx',],sourceType:'module'});
-        traverse(ast, {
-            ImportDeclaration(visitPath){
-                const node = visitPath.node;
-                const sourcePath = node.source.value;
-                result.push(sourcePath??'');
-            },
-            ExpressionStatement(visitPath) {
-                const node = visitPath.node;
-                if (node.expression?.type === 'CallExpression') {
-                    const {callee} = node.expression;
-                    if (callee.type === "MemberExpression") {
-                        const object = callee.object;
-                        if (object.type === 'CallExpression') {
-                            const finalCallee = object.callee;
-                            if (finalCallee.type === 'Import' && object.arguments[0].type==='StringLiteral') {
-                                const sourcePath = object.arguments[0].value;
-                                result.push(sourcePath);
-                            }
-                        }
-                    }
-                    if (callee.type === 'Identifier' && callee.name === 'require') {
-                        const arg = node.expression.arguments[0];
-                        if (arg.type === 'StringLiteral') {
-                            const sourcePath = arg.value;
-                            result.push(sourcePath);
-                        }
-                        
-                    }
-                }
-            },
-            VariableDeclaration(visitPath) {
-                const node = visitPath.node;
-                if (node.declarations.length){
-                    for( let i = 0; i < node.declarations.length; i++) {
-                        const cur = node.declarations[i];
-                        if(cur.init && cur.init.type === 'CallExpression') {
-                            const initCallee = cur.init.callee;
-                            if (initCallee.type === 'Identifier' && initCallee.name === 'require') {
-                                const initArgs = cur.init.arguments;
-                                if (initArgs.length && initArgs[0].type === 'StringLiteral') {
-                                    result.push(initArgs[0].value);
-                                }
-                            }
-                        }
-                    }
+        const collectPath = (path:string) => {
+            result.push(path);
+        };
+        const prasePlugin = new SWCVisitor(collectPath);
+        await transform(code, {
+            plugin: (m) => prasePlugin.visitProgram(m),
+            jsc:{
+                parser: {
+                    syntax: 'typescript',
                 }
             }
         });

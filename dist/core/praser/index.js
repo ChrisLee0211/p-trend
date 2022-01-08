@@ -11,10 +11,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PraserCtr = void 0;
 const file_1 = require("../../utils/file");
-const parser_1 = require("@babel/parser");
-const traverse_1 = require("@babel/traverse");
+const core_1 = require("@swc/core");
 const path = require("path");
 const constant_1 = require("../constant");
+const swcParser_1 = require("./swcParser");
 function isAliasExist(alias) {
     if (Object.keys(alias !== null && alias !== void 0 ? alias : {}).length)
         return true;
@@ -131,63 +131,27 @@ class PraserCtr {
         return result;
     }
     /**
-     * 利用babel praser将目标代码转为ast后收集依赖
+     * 将目标代码转为ast后收集依赖
      * @param code 解析目标代码内容
      * @returns
      * @author chris lee
      * @Time 2021/07/20
+     * @update 2022/01/08 全面替换为swc实现编译收集
      */
     collectImportNodes(code) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!code)
                 return [];
             const result = [];
-            const ast = parser_1.parse(code, { plugins: ['typescript', 'jsx',], sourceType: 'module' });
-            traverse_1.default(ast, {
-                ImportDeclaration(visitPath) {
-                    const node = visitPath.node;
-                    const sourcePath = node.source.value;
-                    result.push(sourcePath !== null && sourcePath !== void 0 ? sourcePath : '');
-                },
-                ExpressionStatement(visitPath) {
-                    var _a;
-                    const node = visitPath.node;
-                    if (((_a = node.expression) === null || _a === void 0 ? void 0 : _a.type) === 'CallExpression') {
-                        const { callee } = node.expression;
-                        if (callee.type === "MemberExpression") {
-                            const object = callee.object;
-                            if (object.type === 'CallExpression') {
-                                const finalCallee = object.callee;
-                                if (finalCallee.type === 'Import' && object.arguments[0].type === 'StringLiteral') {
-                                    const sourcePath = object.arguments[0].value;
-                                    result.push(sourcePath);
-                                }
-                            }
-                        }
-                        if (callee.type === 'Identifier' && callee.name === 'require') {
-                            const arg = node.expression.arguments[0];
-                            if (arg.type === 'StringLiteral') {
-                                const sourcePath = arg.value;
-                                result.push(sourcePath);
-                            }
-                        }
-                    }
-                },
-                VariableDeclaration(visitPath) {
-                    const node = visitPath.node;
-                    if (node.declarations.length) {
-                        for (let i = 0; i < node.declarations.length; i++) {
-                            const cur = node.declarations[i];
-                            if (cur.init && cur.init.type === 'CallExpression') {
-                                const initCallee = cur.init.callee;
-                                if (initCallee.type === 'Identifier' && initCallee.name === 'require') {
-                                    const initArgs = cur.init.arguments;
-                                    if (initArgs.length && initArgs[0].type === 'StringLiteral') {
-                                        result.push(initArgs[0].value);
-                                    }
-                                }
-                            }
-                        }
+            const collectPath = (path) => {
+                result.push(path);
+            };
+            const prasePlugin = new swcParser_1.SWCVisitor(collectPath);
+            yield core_1.transform(code, {
+                plugin: (m) => prasePlugin.visitProgram(m),
+                jsc: {
+                    parser: {
+                        syntax: 'typescript',
                     }
                 }
             });
