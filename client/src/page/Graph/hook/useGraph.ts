@@ -1,14 +1,15 @@
 import G6, { Item, NodeConfig, TreeGraph, TreeGraphData } from '@antv/g6';
-import {nextTick, Ref, ref} from 'vue';
+import {markRaw, nextTick, Ref, ref} from 'vue';
 
 export const useGraph = (containerRef: Ref<HTMLDivElement | null>) => {
-    const graphIns = ref<TreeGraph | null>(null);
+    const readOnlyIns = markRaw<{graphIns:TreeGraph | null}>({graphIns:null});
+    // const graphIns = ref<TreeGraph | null>(null);
     const isFirstRender = ref(true);
     const loading = ref(true);
     const initGraph = (data: TreeGraphData, plugins:any[]) => {
         if(data&& isFirstRender.value) {
             nextTick(() => {
-                graphIns.value = new G6.TreeGraph({
+                readOnlyIns.graphIns = new G6.TreeGraph({
                   container: containerRef.value as HTMLDivElement,
                   modes: {
                     default: [
@@ -21,7 +22,10 @@ export const useGraph = (containerRef: Ref<HTMLDivElement | null>) => {
                         },
                       },
                       "drag-canvas",
-                      "zoom-canvas",
+                      {
+                          type: "zoom-canvas",
+                          enableOptimize: false,
+                      }
                     ],
                   },
                   defaultNode: {
@@ -55,7 +59,7 @@ export const useGraph = (containerRef: Ref<HTMLDivElement | null>) => {
                     },
                   },
                 });
-                graphIns.value.node((node): Partial<NodeConfig> => {
+                readOnlyIns.graphIns.node((node): Partial<NodeConfig> => {
                   let baseConfig: Partial<NodeConfig> = {
                     label: node.name as string,
                     labelCfg: {
@@ -76,19 +80,19 @@ export const useGraph = (containerRef: Ref<HTMLDivElement | null>) => {
                   }
                   return baseConfig;
                 });
-                graphIns.value.on("afterlayout", (evt) => {
+                readOnlyIns.graphIns.on("afterlayout", (evt) => {
                   isFirstRender.value = false;
                   loading.value = false;
                 });
-                graphIns.value.data(data as unknown as TreeGraphData);
-                graphIns.value.render();
-                graphIns.value.fitView();
+                readOnlyIns.graphIns.data(data as unknown as TreeGraphData);
+                readOnlyIns.graphIns.render();
+                readOnlyIns.graphIns.fitView();
               });
         }
     };
 
     return {
-        graphIns,
+        graphRaw: readOnlyIns,
         initGraph,
         loading
     };

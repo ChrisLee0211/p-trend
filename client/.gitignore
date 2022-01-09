@@ -2,3 +2,7 @@ node_modules
 .DS_Store
 dist-ssr
 *.local
+public
+.vscode
+dist/favicon.icon
+dist/index.html
