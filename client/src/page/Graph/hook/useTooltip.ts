@@ -10,6 +10,7 @@ export const useTooltip = (id:string) => {
             container: document.getElementById(id) as HTMLDivElement,
             offsetX: 10,
             offsetY: 10,
+            trigger: 'mouseenter',
             getContent(evt) {
                 const nodeInfo = evt?.item?._cfg?.model;
                 if (nodeInfo) {
@@ -61,7 +62,7 @@ export const useTooltip = (id:string) => {
                 } 
                 return `<h1></h1>`;
             },
-            itemTypes: ['node']
+            itemTypes: ['node'],
         });
     });
     

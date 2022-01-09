@@ -28,6 +28,8 @@
                   :options="dirOpts"
                   virtual-scroll
                   :value="dirSrc"
+                  :show-path="true"
+                  :separator="''"
                   @update:value="handleChangeDir"
                 />
               </div>
@@ -48,7 +50,7 @@
   </div>
 </template>
 <script lang="ts">
-import { defineComponent, ref, nextTick, watch, computed } from "vue";
+import { defineComponent, ref, watch, computed } from "vue";
 import { TreeGraphData } from "@antv/g6";
 import { useFetch } from "@vueuse/core";
 import {
@@ -81,7 +83,7 @@ interface TreeOpts {
 
 export default defineComponent({
   name: "Graph",
-  components: { NSpin, NRadio, NRadioGroup, NSwitch, NTreeSelect,NSpace },
+  components: { NSpin, NRadio, NRadioGroup, NSwitch, NTreeSelect, NSpace },
   setup() {
     const notice = useNotification();
 
@@ -90,7 +92,7 @@ export default defineComponent({
     const [miniMap] = useMiniMap("miniMap", "miniMap");
     const [tooltip] = useTooltip("tooltip");
     const graphData = ref<TreeGraphData | null>(null);
-    const {initGraph, graphIns, loading} = useGraph(graphRef)
+    const { initGraph, graphRaw, loading } = useGraph(graphRef);
     const { onFetchResponse, data } = useFetch<{
       nodes: FileNode[];
       entry: string;
@@ -101,13 +103,13 @@ export default defineComponent({
     onFetchResponse((res) => {
       if (res.status === 200) {
         graphData.value = formatTreeDate(data.value.tree, data.value.entry);
-        initGraph(graphData.value, [miniMap.value,tooltip.value]);
+        initGraph(graphData.value, [miniMap.value, tooltip.value]);
       }
     });
     const autoFitView = useDebounceFn((w: number, h: number) => {
-      if (graphIns.value) {
-        graphIns.value.changeSize(w, h);
-        graphIns.value.fitView(20);
+      if (graphRaw.graphIns) {
+        graphRaw.graphIns.changeSize(w, h);
+        graphRaw.graphIns.fitView(20);
       }
     }, 100);
     useResizeObserver(graphRef, (entries) => {
@@ -130,17 +132,17 @@ export default defineComponent({
     ];
     watch(selectGraphType, (newVal, oldVal) => {
       if (newVal === "project") {
-        graphIns.value?.changeData(
+        graphRaw.graphIns?.changeData(
           formatTreeDate(data.value.tree, data.value.entry)
         );
       }
       if (newVal === "module") {
-        graphIns.value?.changeData(
+        graphRaw.graphIns?.changeData(
           formatNodesData(data.value.nodes, data.value.entry)
         );
         showDeps.value = false;
       }
-      graphIns.value?.fitView();
+      graphRaw.graphIns?.fitView();
     });
 
     /** 依赖标记 */
@@ -149,30 +151,25 @@ export default defineComponent({
       return selectGraphType.value !== "project";
     });
     watch(showDeps, (newVal) => {
-      nextTick(() => {
-        let targetTreeData = graphIns.value?.save();
+      setTimeout(() => {
+        let targetTreeData = graphData.value as TreeGraphData;
         if (newVal === true) {
           targetTreeData = formatDepsData(
             targetTreeData as unknown as FileTree,
             data.value.deps,
             data.value.entry
           );
-        } else {
-          targetTreeData = formatTreeDate(
-            targetTreeData as unknown as FileTree,
-            data.value.entry
-          );
         }
-        graphIns.value?.changeData(targetTreeData);
-        graphIns.value?.fitView();
-      });
+        graphRaw.graphIns?.changeData(targetTreeData);
+        graphRaw.graphIns?.fitCenter();
+      }, 300);
     });
 
     /** 目录选择器 */
     const dirOpts = ref<TreeOpts[]>([]);
     const dirSrc = ref("");
     watch(graphData, () => {
-      if(graphData.value) {
+      if (graphData.value) {
         dirOpts.value = formatDirOptions(
           data.value.tree
         ) as unknown as TreeOpts[];
@@ -180,10 +177,10 @@ export default defineComponent({
           dirSrc.value = dirOpts.value[0].key;
         }
       }
-    })
-    const handleChangeDir = (val: string) => {
+    });
+    const handleChangeDir = (val: string, opt: TreeOpts) => {
       try {
-        if (graphData.value && graphIns.value) {
+        if (graphData.value && graphRaw.graphIns) {
           let targetTreeData = findGraphNode(val, graphData.value);
           // 是否开启依赖标记
           if (targetTreeData) {
@@ -194,8 +191,9 @@ export default defineComponent({
                 data.value.entry
               );
             }
-            graphIns.value.changeData(targetTreeData);
-            graphIns.value?.fitView();
+            graphRaw.graphIns.changeData(targetTreeData);
+            graphRaw.graphIns?.fitView();
+            dirSrc.value = val;
           } else {
             throw new Error();
           }
@@ -203,6 +201,7 @@ export default defineComponent({
           throw new Error();
         }
       } catch (e) {
+        console.log(e);
         notice.error({
           meta: "警告",
           content: "无法解析该目录",
