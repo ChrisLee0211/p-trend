@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PraserCtr = void 0;
+/* eslint-disable no-debugger */
 const file_1 = require("../../utils/file");
 const core_1 = require("@swc/core");
 const path = require("path");
@@ -152,7 +153,8 @@ class PraserCtr {
                 jsc: {
                     parser: {
                         syntax: 'typescript',
-                    }
+                        tsx: true,
+                    },
                 }
             });
             return result;

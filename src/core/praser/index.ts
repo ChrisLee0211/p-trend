@@ -1,3 +1,4 @@
+/* eslint-disable no-debugger */
 import { readFileContent } from "../../utils/file";
 import { transform } from '@swc/core';
 import * as path from 'path';
@@ -40,7 +41,6 @@ export class PraserCtr implements Praser {
         try{
             const content = await readFileContent(pathname,{encoding:'utf8'}) as string;
             const depPaths = await this.collectImportNodes(content);
-            
             const depPathsWithoutNpmDeps = this.filterEnabledPath(depPaths);
             result = this.normalizePaths(depPathsWithoutNpmDeps, node);
         }catch(e){
@@ -137,7 +137,8 @@ export class PraserCtr implements Praser {
             jsc:{
                 parser: {
                     syntax: 'typescript',
-                }
+                    tsx: true,
+                },
             }
         });
         return result;
