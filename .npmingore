@@ -3,5 +3,6 @@
 client/src
 client/vite.config.ts
 client/public
-src
+src/*
+sameple
 test

@@ -16,6 +16,10 @@
   "bin": {
     "p-trend": "./dist/bin.js"
   },
+  "files": [
+    "dist",
+    "client/dist"
+  ],
   "devDependencies": {
     "@types/jest": "^26.0.4",
     "@types/koa": "^2.13.4",
@@ -34,6 +38,7 @@
     "@swc/core": "^1.2.125",
     "chalk": "^4.1.1",
     "commander": "^7.2.0",
+    "htmlparser2": "^7.2.0",
     "inquirer": "^8.1.1",
     "koa": "^2.13.1",
     "koa-bodyparser": "4.3.0",
