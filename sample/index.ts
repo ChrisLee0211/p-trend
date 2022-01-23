@@ -3,6 +3,8 @@ import { PraserCtr } from '../src/core/praser';
 import { Server } from '../src/server';
 import { resolveExternals, resolvePackage } from "../src/core/helper/resolvePackage";
 import { log } from '../src/utils/log';
+import * as path from 'path';
+import { scanFolder, readFileBasicInfo } from "../src/utils/file";
 
 const defaultConfig = {
     entry:'src/',

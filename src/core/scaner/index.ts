@@ -5,6 +5,7 @@ import { DependenceNode, FileNode, FileTree, Scaner } from 'src/types/global';
 import { enablePraseType, rootFileEnum } from '../constant';
 import { removeFile } from '../../utils/file';
 import { PraserCtr } from '../praser';
+import { Dirent } from 'fs';
 
 /**
  * 模块扫描器
@@ -38,7 +39,7 @@ export class ScanerCtr implements Scaner {
                     const fileInfo = await readFileBasicInfo(target.path);
                     normalizeDepNode = {...target,...fileInfo};
                 }catch(e){
-                    console.error(`Fail to resolve parh '${target.path}'`);
+                    console.error(`Fail to resolve path '${target.path}'`);
                 }
             }
             this.dependenceNodes.push(normalizeDepNode);
@@ -77,10 +78,10 @@ export class ScanerCtr implements Scaner {
      * @Time 2021/08/17
      */
     private getModuleName(filePath:string):string {
-        const rootFileBasicNames = rootFileEnum;
+        const reg = /^(index)(\.).*$/;
         const baseName = path.basename(filePath);
         const splitPath = filePath.split(path.sep);
-        if (rootFileBasicNames.includes(baseName)) {
+        if (baseName.match(reg)) {
             return `${splitPath[splitPath.length - 2]}${path.sep}${baseName}`;
         } else {
             return splitPath[splitPath.length - 1];
@@ -179,52 +180,101 @@ export class ScanerCtr implements Scaner {
                                 moduleId,
                             };
                         } else {
-                            // 如果没有后缀名，则为类似"../../sl"的引用，尝试拼接后缀名再校验
-                            const extNames = [...rootFileEnum,...enablePraseType];
-                            let hasDone = false;
-                            try{
-                                // 先尝试拼接为目录后接index
-                                for( let e = 0; e < extNames.length; e++) {
-                                   const extName = extNames[e];
-                                   let fullPath = '';
-                                   if (enablePraseType.includes(extName)) {
-                                       fullPath = curPath + extName;
-                                   } else {
-                                       fullPath = path.join(curPath, extName);
-                                    }
-                                    const isExist = await checkFileIsBuilt(fullPath);
-                                    if (isExist) {
-                                     const fileName = this.getModuleName(fullPath);
-                                     const moduleId = this.getModuleId(fullPath, fileName);
-                                     depNode = {
-                                         name:fileName,
-                                         path:fullPath,
-                                         reference:[currentFileNode],
-                                         canResolve: true,
-                                         moduleId
-                                     };
-                                     hasDone = true;
-                                     break;
+                            // 没有后缀名时，进一步解析到最终路径
+                           const depsFiles:Dirent[] = [];
+                           let hasDone = false;
+                           try{
+                               const dirArray = await scanFolder(curPath);
+                               const size = dirArray.length;
+                               if (size > 0) {
+                                   for(let i = 0; i < size; i++) {
+                                       depsFiles.push(dirArray[i]);
                                     }
                                 }
-                                if (hasDone === false) {
-                                    // 如果始终没找到文件，则意味着该文件不是一个js可以识别的模块
-                                    // 直接取文件路径末尾作为名字
-                                    const fileName = this.getModuleName(curPath);
-                                    const moduleId = this.getModuleId(curPath, fileName);
-                                    depNode =  {
-                                        name:fileName,
-                                        path:curPath,
-                                        reference:[currentFileNode],
-                                        canResolve:false,
-                                        moduleId
-                                    };
+                            }catch(e) {
+                               // if throw error that means not a folder
+                               hasDone = false;
+                           }
+                           if(depsFiles.length) {
+                               const reg = /^(index)(\.).*$/;
+                               const indexFile = depsFiles.find((dir) => {
+                                   const basename = path.basename(dir.name);
+                                   return basename.match(reg);
+                               });
+                               if (indexFile) {
+                                const fullPath = indexFile.name;
+                                const fileName = this.getModuleName(fullPath);
+                                const moduleId = this.getModuleId(fullPath, fileName);
+                                depNode = {
+                                    name:fileName,
+                                    path:fullPath,
+                                    reference:[currentFileNode],
+                                    canResolve: true,
+                                    moduleId
+                                };
+                                hasDone = true;
+                               }
+                           }
+                           if (hasDone === false) {
+                            // 如果始终没找到文件，则意味着该文件不是一个js可以识别的模块
+                            // 直接取文件路径末尾作为名字
+                            const fileName = this.getModuleName(curPath);
+                            const moduleId = this.getModuleId(curPath, fileName);
+                            depNode =  {
+                                name:fileName,
+                                path:curPath,
+                                reference:[currentFileNode],
+                                canResolve:false,
+                                moduleId
+                            };
+                            
+                        }
+                            // const extNames = [...rootFileEnum,...enablePraseType];
+                            // let hasDone = false;
+                            
+                            // try{
+                            //     // 先尝试拼接为目录后接index
+                            //     for( let e = 0; e < extNames.length; e++) {
+                            //        const extName = extNames[e];
+                            //        let fullPath = '';
+                            //        if (enablePraseType.includes(extName)) {
+                            //            fullPath = curPath + extName;
+                            //        } else {
+                            //            fullPath = path.join(curPath, extName);
+                            //         }
+                            //         const isExist = await checkFileIsBuilt(fullPath);
+                            //         if (isExist) {
+                            //          const fileName = this.getModuleName(fullPath);
+                            //          const moduleId = this.getModuleId(fullPath, fileName);
+                            //          depNode = {
+                            //              name:fileName,
+                            //              path:fullPath,
+                            //              reference:[currentFileNode],
+                            //              canResolve: true,
+                            //              moduleId
+                            //          };
+                            //          hasDone = true;
+                            //          break;
+                            //         }
+                            //     }
+                            //     if (hasDone === false) {
+                            //         // 如果始终没找到文件，则意味着该文件不是一个js可以识别的模块
+                            //         // 直接取文件路径末尾作为名字
+                            //         const fileName = this.getModuleName(curPath);
+                            //         const moduleId = this.getModuleId(curPath, fileName);
+                            //         depNode =  {
+                            //             name:fileName,
+                            //             path:curPath,
+                            //             reference:[currentFileNode],
+                            //             canResolve:false,
+                            //             moduleId
+                            //         };
                                     
-                                }
+                            //     }
 
-                            }catch(e){
-                                console.error(e);
-                            }
+                            // }catch(e){
+                            //     console.error(e);
+                            // }
                         }
                         if (depNode !== null){
                             // 记录到被依赖节点中

@@ -41,6 +41,7 @@ export class PraserCtr implements Praser {
         try{
             const content = await readFileContent(pathname,{encoding:'utf8'}) as string;
             const depPaths = await this.collectImportNodes(content);
+            console.log('depPaths ===>', depPaths);
             const depPathsWithoutNpmDeps = this.filterEnabledPath(depPaths);
             result = this.normalizePaths(depPathsWithoutNpmDeps, node);
         }catch(e){

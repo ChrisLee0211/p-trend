@@ -154,6 +154,7 @@ export async function readFileBasicInfo(filePath:string):Promise<{size:number,ct
             fs.stat(filePath,(err,stats) => {
                 if(!err){
                     resolve({
+                        ...stats,
                         size:stats.size,
                         ctime:stats.ctime,
                         mtime:stats.mtime
