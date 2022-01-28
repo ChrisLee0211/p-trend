@@ -39,14 +39,16 @@ type CollectFnType = (path:string) => void
                  if (declareSouce.length) {
                      const target = declareSouce[0];
                      if (target.type === 'VariableDeclarator' && target.init?.type === 'CallExpression') {
-                         const args = target.init.arguments;
-                         path = this.getFirstArgsValue(args);
+                        if (target.init.callee.type === 'Identifier' && target.init.callee.value === 'require') {
+                            const args = target.init.arguments;
+                             path = this.getFirstArgsValue(args);
+                        }
                      }
                  }
              }
              if(importNode.type === 'ExpressionStatement') {
                  const expression = importNode.expression;
-                 if (expression.type ==='CallExpression') {
+                 if (expression.type ==='CallExpression' && expression.callee.type === 'Identifier' && expression.callee.value === 'require') {
                      const args = expression.arguments;
                      path = this.getFirstArgsValue(args);
                  }
