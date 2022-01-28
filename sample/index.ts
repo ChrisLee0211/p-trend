@@ -3,6 +3,8 @@ import { PraserCtr } from '../src/core/praser';
 import { Server } from '../src/server';
 import { resolveExternals, resolvePackage } from "../src/core/helper/resolvePackage";
 import { log } from '../src/utils/log';
+import * as path from 'path';
+import { scanFolder, readFileBasicInfo } from "../src/utils/file";
 
 const defaultConfig = {
     entry:'src/',
@@ -27,8 +29,8 @@ const test = async () => {
         }catch(e) {
             console.error(e);
         }
-        const praser = new PraserCtr(defaultConfig.alias, npmDependency, externals);
-        const scaner = new ScanerCtr(defaultConfig.entry);
+        const praser = new PraserCtr();
+        const scaner = new ScanerCtr(defaultConfig.entry,defaultConfig.alias, npmDependency, externals);
         await scaner.scan(praser.parseDependency, praser);
         await scaner.buildFileTree();
         scaner.diff();
