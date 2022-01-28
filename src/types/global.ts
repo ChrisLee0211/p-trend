@@ -54,15 +54,15 @@ export interface Config {
 }
 
 export interface Praser {
-    alias:Config['alias'];
-    npmDeps:string[];
-    externals:string[];
     parseDependency(node:FileNode):Promise<string[]>;
     collectImportNodes(code?:string):Promise<string[]>;
 }
 export interface Scaner {
     entry:string
+    alias:Config['alias'];
     fileNodes:FileNode[]
+    npmDeps:string[];
+    externals:string[];
     fileTree:FileTree | null
     dependenceNodes:DependenceNode[]
     markDependenceNode(target:DependenceNode, currentFileNode:FileNode):Promise<void>
