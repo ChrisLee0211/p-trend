@@ -4,6 +4,7 @@ import * as program from "commander";
 import {normalizeConfig} from './configLoader';
 import {PraserCtr} from './core/praser';
 import {ScanerCtr} from './core/scaner';
+import { jsPlugin } from './core/plugins/jsPlugin';
 import {Server} from './server';
 import { Config } from "./types/global";
 import { log } from './utils/log';
@@ -38,6 +39,7 @@ program
                 console.error(e);
             }
             const praser = new PraserCtr();
+            praser.registerPlugins(jsPlugin);
             const scaner = new ScanerCtr(defaultConfig.entry,defaultConfig.alias, npmDependency, externals);
             await scaner.scan(praser.parseDependency, praser);
             await scaner.buildFileTree();
