@@ -67,7 +67,7 @@ export interface Scaner {
     entry:string
     alias:Config['alias'];
     fileNodes:FileNode[]
-    npmDeps:string[];
+    npmDepsMap: Record<string,number>
     externals:string[];
     fileTree:FileTree | null
     dependenceNodes:DependenceNode[]

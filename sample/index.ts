@@ -1,6 +1,6 @@
 import { ScanerCtr } from "../src/core/scaner";
 import { PraserCtr } from '../src/core/praser';
-import { jsPlugin } from '../src/core/plugins/jsPlugin';
+import { jsPlugin, vuePlugin } from '../src/core/plugins';
 import { Server } from '../src/server';
 import { resolveExternals, resolvePackage } from "../src/core/helper/resolvePackage";
 import { log } from '../src/utils/log';
@@ -32,6 +32,7 @@ const test = async () => {
         }
         const praser = new PraserCtr();
             praser.registerPlugins(jsPlugin);
+            praser.registerPlugins(vuePlugin);
             const scaner = new ScanerCtr(defaultConfig.entry,defaultConfig.alias, npmDependency, externals);
             await scaner.scan(praser.parseDependency, praser);
             await scaner.buildFileTree();

@@ -17,12 +17,13 @@ export class ScanerCtr implements Scaner {
     fileNodes: FileNode[] = [];
     fileTree: FileTree | null = null;
     dependenceNodes: DependenceNode[] = [];
-    npmDeps: string[] = []
+    npmDepsMap: Record<string,number> = {};
+    private npmRegs:Array<{name:string, rule:RegExp}> = [];
     externals: string[] = []
     constructor(entry: string, alias?: { [key: string]: string }, npmDeps?: string[], externals?: string[]) {
         this.alias = alias ?? {};
         this.entry = entry;
-        this.npmDeps = npmDeps ?? [];
+        this.npmDepsMap = this.collectNpm(npmDeps||[]);
         this.externals = externals ?? [];
         this.normalizePaths.bind(this);
         this.filterEnabledPath.bind(this);
@@ -48,6 +49,7 @@ export class ScanerCtr implements Scaner {
                     const fileInfo = await readFileBasicInfo(target.path);
                     normalizeDepNode = { ...target, ...fileInfo };
                 } catch (e) {
+                    console.error(e);
                     console.error(`Fail to resolve path '${target.path}'`);
                 }
             }
@@ -123,11 +125,52 @@ export class ScanerCtr implements Scaner {
      * @Time 2021/12/11
      */
     private filterEnabledPath(depsPath: string[]): string[] {
+        const quantity = depsPath.length;
+        const npmQuantity = this.npmRegs.length;
+        const depByNpm:string[] = [];
+        for(let i = 0; i< quantity; i++) {
+            const dep = depsPath[i];
+            for(let k = 0; k < npmQuantity;k++) {
+                const npm = this.npmRegs[k];
+                const npmName = npm.name;
+                const rule = npm.rule;
+                if (rule.test(dep)) {
+                    if (npmName in this.npmDepsMap) {
+                        this.npmDepsMap[npmName] = this.npmDepsMap[npmName] + 1;
+                    }
+                    depByNpm.push(dep);
+                    break;
+                }
+            }
+        }
         return depsPath.filter((depPath) => {
-            const pathSplit = depPath.split(path.sep);
-            const root = pathSplit[0];
-            return !this.npmDeps.includes(root) && !this.externals.includes(root);
+            return !depByNpm.includes(depPath) || !this.externals.includes(depPath);
         });
+    }
+
+    /**
+     * 收集npm包到map中，用于计数被引用的依赖
+     * @param npmDeps npm包列表
+     * @returns 
+     * @author chris lee
+     * @Time 2022/01/30
+     */
+    private collectNpm(npmDeps:string[]) {
+        const map:Record<string,number> = {};
+        const len = npmDeps.length;
+        if (this.npmRegs.length === 0) {
+            for(let i=0;i < len; i++) {
+                const npmName = npmDeps[i];
+                map[npmName] = 0;
+                this.npmRegs.push({name:npmName, rule:new RegExp(npmName)});
+            }
+        } else {
+            for(let i=0;i < len; i++) {
+                const npmName = npmDeps[i];
+                map[npmName] = 0;
+            }
+        }
+        return map;
     }
 
     /**
@@ -169,7 +212,8 @@ export class ScanerCtr implements Scaner {
             // 情况一： 属于xxx/yy/index.js or yy/ss/index.ts 文件中引用
             // 情况二： 属于xxx/ss.js 文件中的引用
             let filefolderPath = '';
-            if (rootFileEnum.includes(path.basename(fileNode.path))) {
+            const indexReg = /^(index)(\.).*$/;
+            if (indexReg.test(path.basename(fileNode.path))) {
                 const baseName = path.basename(fileNode.path);
                 filefolderPath = fileNode.path.split(baseName)[0];
             } else {
@@ -311,6 +355,9 @@ export class ScanerCtr implements Scaner {
                             }
                         }
                         if (depNode !== null) {
+                            if(depNode.path === '/Users/chrislee/Documents/self_project/p-trend/client/src/page/components/Detail.vue') {
+                                console.log();
+                            }
                             // 记录到被依赖节点中
                             await this.markDependenceNode(depNode, currentFileNode);
                         }

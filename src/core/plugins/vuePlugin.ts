@@ -21,6 +21,7 @@ export const vuePlugin:ParserPlugin = {
             ontext(text) {
                 if (isScript) {
                     scriptCode = text;
+                    isScript = false;
                 }
             },
             onclosetag(tagname) {
@@ -29,11 +30,11 @@ export const vuePlugin:ParserPlugin = {
                 }
             },
         });
+        parser.write(code);
+        parser.end();
         if (scriptCode.trim().length) {
             result = await scanImportDeclaration(scriptCode);
         }
-        parser.write(code);
-        parser.end();
         return result;
     }
 };
