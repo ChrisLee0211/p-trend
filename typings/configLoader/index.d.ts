@@ -1,6 +1,6 @@
 import { Config } from "../types/global";
 interface CommandOptions {
-    conifg?: string;
+    config?: string;
     port?: number;
     entry?: string;
 }

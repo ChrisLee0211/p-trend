@@ -213,7 +213,6 @@ export default defineComponent({
       currentSelections.value = keys;
     };
     const batchRemoveFiles = () => {
-      console.log("当前选中了", currentSelections.value);
       dialog.warning({
         title: '提示',
         content: '确定要删除指定的文件吗？',

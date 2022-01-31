@@ -1,14 +1,20 @@
-import { DependenceNode, FileNode, FileTree, Scaner } from 'src/types/global';
+import { Config, DependenceNode, FileNode, FileTree, Scaner } from 'src/types/global';
 import { PraserCtr } from '../praser';
 /**
  * 模块扫描器
  */
 export declare class ScanerCtr implements Scaner {
     entry: string;
+    alias: Config['alias'];
     fileNodes: FileNode[];
     fileTree: FileTree | null;
     dependenceNodes: DependenceNode[];
-    constructor(entry: string);
+    npmDepsMap: Record<string, number>;
+    private npmRegs;
+    externals: string[];
+    constructor(entry: string, alias?: {
+        [key: string]: string;
+    }, npmDeps?: string[], externals?: string[]);
     /**
      * 标记当前节点为依赖节点并生成对应文件信息,同时也将依赖节点的路径收集到当前扫描节点中
      * @param target 需要记录的目标节点
@@ -41,6 +47,31 @@ export declare class ScanerCtr implements Scaner {
      * @Time 2021/12/10
      */
     private getModuleId;
+    /**
+     * 过滤出可解析依赖
+     * @param depsPath 依赖路径数组
+     * @returns 不包含npm以及cdn等外部依赖的路径数组
+     * @author chris lee
+     * @Time 2021/12/11
+     */
+    private filterEnabledPath;
+    /**
+     * 收集npm包到map中，用于计数被引用的依赖
+     * @param npmDeps npm包列表
+     * @returns
+     * @author chris lee
+     * @Time 2022/01/30
+     */
+    private collectNpm;
+    /**
+     * 格式化各路径为绝对路径
+     * @param depPaths 依赖路径数组
+     * @param fileNode 本次解析的目标节点
+     * @returns {array} 依赖路径数组
+     * @author chris lee
+     * @Time 2021/07/20
+     */
+    private normalizePaths;
     /**
      * 根据初始化的entry开始以深度遍历方式扫描文件
      * @param effectFn 扫描文件节点时执行副作用回调

@@ -2,7 +2,7 @@
 import { readFileContent } from "../../utils/file";
 import { transform } from '@swc/core';
 import * as path from 'path';
-import { Config, FileNode, Praser } from "../../types/global";
+import { Config, FileNode, ParserPlugin, Praser } from "../../types/global";
 import { enablePraseType, rootFileEnum } from "../constant";
 import { SWCVisitor } from './swcParser';
 
@@ -10,10 +10,11 @@ import { SWCVisitor } from './swcParser';
  * 依赖路径解析器
  */
 export class PraserCtr implements Praser {
-
+    plugins:ParserPlugin[] = []
     constructor() {
-        this.collectImportNodes.bind(this);
+        // this.collectImportNodes.bind(this);
         this.parseDependency.bind(this);
+        this.registerPlugins.bind(this);
     }
 
     /**
@@ -26,15 +27,38 @@ export class PraserCtr implements Praser {
     async parseDependency(node:FileNode):Promise<string[]>{
         let result:string[] = [];
         const pathname = node.path;
-        if(enablePraseType.includes(path.extname(pathname)) === false) return result;
-        try{
-            const content = await readFileContent(pathname,{encoding:'utf8'}) as string;
-            const depPaths = await this.collectImportNodes(content);
-            result = depPaths;
-        }catch(e){
-            console.error(e);
+        const len = this.plugins.length;
+        if (len) {
+            for(let i = 0; i< len;i++) {
+                const plugin = this.plugins[i];
+                let isMatch = false;
+                if (typeof(plugin.rule) === 'function') {
+                    isMatch = plugin.rule(pathname);
+                } else {
+                    isMatch = plugin.rule.test(pathname);
+                }
+                if (isMatch) {
+                    const content = await readFileContent(pathname,{encoding:'utf8'}) as string;
+                    result = await plugin.collector(content);
+                    break;
+                }
+            }
+        } else {
+            return result;
         }
+        // if(enablePraseType.includes(path.extname(pathname)) === false) return result;
+        // try{
+        //     const content = await readFileContent(pathname,{encoding:'utf8'}) as string;
+        //     const depPaths = await this.collectImportNodes(content);
+        //     result = depPaths;
+        // }catch(e){
+        //     console.error(e);
+        // }
         return result;
+    }
+
+    registerPlugins(plugin:ParserPlugin):void {
+        this.plugins.push(plugin);
     }
 
     /**
@@ -45,22 +69,22 @@ export class PraserCtr implements Praser {
      * @Time 2021/07/20
      * @update 2022/01/08 全面替换为swc实现编译收集
      */
-    async collectImportNodes(code?:string):Promise<string[]> {
-        if(!code) return [];
-        const result:string[] = [];
-        const collectPath = (path:string) => {
-            result.push(path);
-        };
-        const prasePlugin = new SWCVisitor(collectPath);
-        await transform(code, {
-            plugin: (m) => prasePlugin.visitProgram(m),
-            jsc:{
-                parser: {
-                    syntax: 'typescript',
-                    tsx: true,
-                },
-            }
-        });
-        return result;
-    }
+    // async collectImportNodes(code?:string):Promise<string[]> {
+    //     if(!code) return [];
+    //     const result:string[] = [];
+    //     const collectPath = (path:string) => {
+    //         result.push(path);
+    //     };
+    //     const prasePlugin = new SWCVisitor(collectPath);
+    //     await transform(code, {
+    //         plugin: (m) => prasePlugin.visitProgram(m),
+    //         jsc:{
+    //             parser: {
+    //                 syntax: 'typescript',
+    //                 tsx: true,
+    //             },
+    //         }
+    //     });
+    //     return result;
+    // }
 }

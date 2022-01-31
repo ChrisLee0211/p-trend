@@ -42,10 +42,10 @@ exports.normalizeConfig = (defaultConfig, cmdOptions) => __awaiter(void 0, void 
         let configPath;
         /** 判断是否使用了'-c'命令输入了配置文件路径 */
         if (commandOptions.includes('config')) {
-            if (!cmdOptions.conifg) {
+            if (!cmdOptions.config) {
                 throw new Error(`Can not found config, please check if it is exist`);
             }
-            configPath = cmdOptions.conifg;
+            configPath = cmdOptions.config;
         }
         else {
             /** 否则按默认读取 */
@@ -56,7 +56,7 @@ exports.normalizeConfig = (defaultConfig, cmdOptions) => __awaiter(void 0, void 
                 const fullPath = path_1.concatPath(path_1.getCurrentPath(), configPath);
                 const isExist = yield file_1.checkFileIsBuilt(fullPath);
                 if (!isExist) {
-                    throw new Error(`Can not find conifg file by wrong path, please check if it is exist`);
+                    throw new Error(`Can not find config file by wrong path, please check if it is exist`);
                 }
                 const config = yield configLoader(fullPath);
                 result = Object.assign(Object.assign({}, result), config);

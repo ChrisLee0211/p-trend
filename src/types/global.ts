@@ -53,15 +53,21 @@ export interface Config {
     }
 }
 
+export interface ParserPlugin {
+    rule:RegExp | ((name:string) => boolean);
+    collector:(content:string) => Promise<string[]>
+}
+
 export interface Praser {
     parseDependency(node:FileNode):Promise<string[]>;
-    collectImportNodes(code?:string):Promise<string[]>;
+    // collectImportNodes(code?:string):Promise<string[]>;
+    registerPlugins(ParserPlugin):void
 }
 export interface Scaner {
     entry:string
     alias:Config['alias'];
     fileNodes:FileNode[]
-    npmDeps:string[];
+    npmDepsMap: Record<string,number>
     externals:string[];
     fileTree:FileTree | null
     dependenceNodes:DependenceNode[]

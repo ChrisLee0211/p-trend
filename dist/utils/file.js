@@ -186,11 +186,7 @@ function readFileBasicInfo(filePath) {
             try {
                 fs.stat(filePath, (err, stats) => {
                     if (!err) {
-                        resolve({
-                            size: stats.size,
-                            ctime: stats.ctime,
-                            mtime: stats.mtime
-                        });
+                        resolve(Object.assign(Object.assign({}, stats), { size: stats.size, ctime: stats.ctime, mtime: stats.mtime }));
                     }
                     else {
                         reject(err);
