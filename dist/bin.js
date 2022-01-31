@@ -14,6 +14,7 @@ const program = require("commander");
 const configLoader_1 = require("./configLoader");
 const praser_1 = require("./core/praser");
 const scaner_1 = require("./core/scaner");
+const plugins_1 = require("./core/plugins");
 const server_1 = require("./server");
 const log_1 = require("./utils/log");
 const resolvePackage_1 = require("./core/helper/resolvePackage");
@@ -46,8 +47,10 @@ program
         catch (e) {
             console.error(e);
         }
-        const praser = new praser_1.PraserCtr(defaultConfig.alias, npmDependency, externals);
-        const scaner = new scaner_1.ScanerCtr(defaultConfig.entry);
+        const praser = new praser_1.PraserCtr();
+        praser.registerPlugins(plugins_1.jsPlugin);
+        praser.registerPlugins(plugins_1.vuePlugin);
+        const scaner = new scaner_1.ScanerCtr(defaultConfig.entry, defaultConfig.alias, npmDependency, externals);
         yield scaner.scan(praser.parseDependency, praser);
         yield scaner.buildFileTree();
         scaner.diff();

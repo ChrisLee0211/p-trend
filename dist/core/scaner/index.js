@@ -13,17 +13,26 @@ exports.ScanerCtr = void 0;
 const file_1 = require("../../utils/file");
 const path = require("path");
 const stack_1 = require("../../utils/stack");
-const constant_1 = require("../constant");
 const file_2 = require("../../utils/file");
+const resolveConfig_1 = require("../helper/resolveConfig");
 /**
  * 模块扫描器
  */
 class ScanerCtr {
-    constructor(entry) {
+    constructor(entry, alias, npmDeps, externals) {
+        this.alias = {};
         this.fileNodes = [];
         this.fileTree = null;
         this.dependenceNodes = [];
+        this.npmDepsMap = {};
+        this.npmRegs = [];
+        this.externals = [];
+        this.alias = alias !== null && alias !== void 0 ? alias : {};
         this.entry = entry;
+        this.npmDepsMap = this.collectNpm(npmDeps || []);
+        this.externals = externals !== null && externals !== void 0 ? externals : [];
+        this.normalizePaths.bind(this);
+        this.filterEnabledPath.bind(this);
     }
     /**
      * 标记当前节点为依赖节点并生成对应文件信息,同时也将依赖节点的路径收集到当前扫描节点中
@@ -45,7 +54,8 @@ class ScanerCtr {
                         normalizeDepNode = Object.assign(Object.assign({}, target), fileInfo);
                     }
                     catch (e) {
-                        console.error(`Fail to resolve parh '${target.path}'`);
+                        console.error(e);
+                        console.error(`Fail to resolve path '${target.path}'`);
                     }
                 }
                 this.dependenceNodes.push(normalizeDepNode);
@@ -86,10 +96,10 @@ class ScanerCtr {
      * @Time 2021/08/17
      */
     getModuleName(filePath) {
-        const rootFileBasicNames = constant_1.rootFileEnum;
+        const reg = /^(index)(\.).*$/;
         const baseName = path.basename(filePath);
         const splitPath = filePath.split(path.sep);
-        if (rootFileBasicNames.includes(baseName)) {
+        if (baseName.match(reg) && splitPath.length > 1) {
             return `${splitPath[splitPath.length - 2]}${path.sep}${baseName}`;
         }
         else {
@@ -113,6 +123,117 @@ class ScanerCtr {
         else {
             return filePath.split(path.sep).join('-');
         }
+    }
+    /**
+     * 过滤出可解析依赖
+     * @param depsPath 依赖路径数组
+     * @returns 不包含npm以及cdn等外部依赖的路径数组
+     * @author chris lee
+     * @Time 2021/12/11
+     */
+    filterEnabledPath(depsPath) {
+        const quantity = depsPath.length;
+        const npmQuantity = this.npmRegs.length;
+        const depByNpm = [];
+        for (let i = 0; i < quantity; i++) {
+            const dep = depsPath[i];
+            for (let k = 0; k < npmQuantity; k++) {
+                const npm = this.npmRegs[k];
+                const npmName = npm.name;
+                const rule = npm.rule;
+                if (rule.test(dep)) {
+                    if (npmName in this.npmDepsMap) {
+                        this.npmDepsMap[npmName] = this.npmDepsMap[npmName] + 1;
+                    }
+                    depByNpm.push(dep);
+                    break;
+                }
+            }
+        }
+        return depsPath.filter((depPath) => {
+            return !depByNpm.includes(depPath) || !this.externals.includes(depPath);
+        });
+    }
+    /**
+     * 收集npm包到map中，用于计数被引用的依赖
+     * @param npmDeps npm包列表
+     * @returns
+     * @author chris lee
+     * @Time 2022/01/30
+     */
+    collectNpm(npmDeps) {
+        const map = {};
+        const len = npmDeps.length;
+        if (this.npmRegs.length === 0) {
+            for (let i = 0; i < len; i++) {
+                const npmName = npmDeps[i];
+                map[npmName] = 0;
+                this.npmRegs.push({ name: npmName, rule: new RegExp(npmName) });
+            }
+        }
+        else {
+            for (let i = 0; i < len; i++) {
+                const npmName = npmDeps[i];
+                map[npmName] = 0;
+            }
+        }
+        return map;
+    }
+    /**
+     * 格式化各路径为绝对路径
+     * @param depPaths 依赖路径数组
+     * @param fileNode 本次解析的目标节点
+     * @returns {array} 依赖路径数组
+     * @author chris lee
+     * @Time 2021/07/20
+     */
+    normalizePaths(depPaths, fileNode) {
+        const result = [];
+        if (!depPaths.length)
+            return result;
+        const aliasKey = Object.keys(this.alias || {});
+        // todo: 根据目前文件路径和相对路径拼接出绝对路径
+        for (let i = 0; i < depPaths.length; i++) {
+            const dependencePath = depPaths[i];
+            const splitPath = dependencePath.split(path.sep);
+            // 先判断有没有路径别名
+            if (aliasKey.length) {
+                let isResolve = false;
+                for (let a = 0; a < aliasKey.length; a++) {
+                    if (splitPath.includes(aliasKey[a])) {
+                        const replaceSplitPath = splitPath.map((p) => {
+                            if (p === aliasKey[a] && resolveConfig_1.isAliasExist(this.alias))
+                                return this.alias[aliasKey[a]];
+                            return p;
+                        });
+                        const absolutePath = path.resolve(path.join(...replaceSplitPath));
+                        result.push(absolutePath);
+                        isResolve = true;
+                        break;
+                    }
+                }
+                if (isResolve) {
+                    continue;
+                }
+            }
+            // 分两种情况处理路径拼接：
+            // 情况一： 属于xxx/yy/index.js or yy/ss/index.ts 文件中引用
+            // 情况二： 属于xxx/ss.js 文件中的引用
+            let filefolderPath = '';
+            const indexReg = /^(index)(\.).*$/;
+            if (indexReg.test(path.basename(fileNode.path))) {
+                const baseName = path.basename(fileNode.path);
+                filefolderPath = fileNode.path.split(baseName)[0];
+            }
+            else {
+                filefolderPath = fileNode.path.split(fileNode.name)[0];
+            }
+            const absolutePath = path.resolve(filefolderPath, dependencePath);
+            if (!result.includes(absolutePath)) {
+                result.push(absolutePath);
+            }
+        }
+        return result;
     }
     /**
      * 根据初始化的entry开始以深度遍历方式扫描文件
@@ -170,7 +291,12 @@ class ScanerCtr {
                         let dependenceFilePaths = [];
                         if (effectFn) {
                             const cb = effectFn.bind(ctx);
-                            dependenceFilePaths = yield cb(currentFileNode);
+                            const depPaths = yield cb(currentFileNode);
+                            if (currentFileNode.path === '/Users/chrislee/Documents/self_project/p-trend/client/src/main.ts') {
+                                console.log();
+                            }
+                            const depPathsWithoutNpmDeps = this.filterEnabledPath(depPaths);
+                            dependenceFilePaths = this.normalizePaths(depPathsWithoutNpmDeps, currentFileNode);
                         }
                         // 解析这组数组每一个路径，查看是否真的有index文件，然后构造成fileNode存起来
                         const dependenceFilePathsNums = dependenceFilePaths.length;
@@ -191,51 +317,54 @@ class ScanerCtr {
                                 };
                             }
                             else {
-                                // 如果没有后缀名，则为类似"../../sl"的引用，尝试拼接后缀名再校验
-                                const extNames = [...constant_1.rootFileEnum, ...constant_1.enablePraseType];
+                                // 没有后缀名时，进一步解析到最终路径
+                                const depsFiles = [];
                                 let hasDone = false;
                                 try {
-                                    // 先尝试拼接为目录后接index
-                                    for (let e = 0; e < extNames.length; e++) {
-                                        const extName = extNames[e];
-                                        let fullPath = '';
-                                        if (constant_1.enablePraseType.includes(extName)) {
-                                            fullPath = curPath + extName;
+                                    const dirArray = yield file_1.scanFolder(curPath);
+                                    const size = dirArray.length;
+                                    if (size > 0) {
+                                        for (let i = 0; i < size; i++) {
+                                            depsFiles.push(dirArray[i]);
                                         }
-                                        else {
-                                            fullPath = path.join(curPath, extName);
-                                        }
-                                        const isExist = yield file_1.checkFileIsBuilt(fullPath);
-                                        if (isExist) {
-                                            const fileName = this.getModuleName(fullPath);
-                                            const moduleId = this.getModuleId(fullPath, fileName);
-                                            depNode = {
-                                                name: fileName,
-                                                path: fullPath,
-                                                reference: [currentFileNode],
-                                                canResolve: true,
-                                                moduleId
-                                            };
-                                            hasDone = true;
-                                            break;
-                                        }
-                                    }
-                                    if (hasDone === false) {
-                                        // 如果始终没找到文件，则意味着该文件不是一个js可以识别的模块
-                                        // 直接取文件路径末尾作为名字
-                                        const fileName = this.getModuleName(curPath);
-                                        const moduleId = this.getModuleId(curPath, fileName);
-                                        depNode = {
-                                            name: fileName,
-                                            path: curPath,
-                                            reference: [currentFileNode],
-                                            canResolve: false,
-                                            moduleId
-                                        };
                                     }
                                 }
                                 catch (e) {
-                                    console.error(e);
+                                    // if throw error that means not a folder
+                                    hasDone = false;
+                                }
+                                if (depsFiles.length) {
+                                    const reg = /^(index)(\.).*$/;
+                                    const indexFile = depsFiles.find((dir) => {
+                                        const basename = path.basename(dir.name);
+                                        return basename.match(reg);
+                                    });
+                                    if (indexFile) {
+                                        const fullPath = path.join(curPath, indexFile.name);
+                                        const fileName = this.getModuleName(fullPath);
+                                        const moduleId = this.getModuleId(fullPath, fileName);
+                                        depNode = {
+                                            name: fileName,
+                                            path: fullPath,
+                                            reference: [currentFileNode],
+                                            canResolve: true,
+                                            moduleId
+                                        };
+                                        hasDone = true;
+                                    }
+                                }
+                                if (hasDone === false) {
+                                    // 如果始终没找到文件，则意味着该文件不是一个js可以识别的模块
+                                    // 直接取文件路径末尾作为名字
+                                    const fileName = this.getModuleName(curPath);
+                                    const moduleId = this.getModuleId(curPath, fileName);
+                                    depNode = {
+                                        name: fileName,
+                                        path: curPath,
+                                        reference: [currentFileNode],
+                                        canResolve: false,
+                                        moduleId
+                                    };
                                 }
                             }
                             if (depNode !== null) {

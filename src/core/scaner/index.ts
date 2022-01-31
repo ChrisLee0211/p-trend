@@ -282,6 +282,9 @@ export class ScanerCtr implements Scaner {
                     if (effectFn) {
                         const cb = effectFn.bind(ctx);
                         const depPaths = await cb(currentFileNode);
+                        if(currentFileNode.path === '/Users/chrislee/Documents/self_project/p-trend/client/src/main.ts') {
+                            console.log();
+                        }
                         const depPathsWithoutNpmDeps = this.filterEnabledPath(depPaths);
                         dependenceFilePaths = this.normalizePaths(depPathsWithoutNpmDeps, currentFileNode);
 
@@ -355,9 +358,6 @@ export class ScanerCtr implements Scaner {
                             }
                         }
                         if (depNode !== null) {
-                            if(depNode.path === '/Users/chrislee/Documents/self_project/p-trend/client/src/page/components/Detail.vue') {
-                                console.log();
-                            }
                             // 记录到被依赖节点中
                             await this.markDependenceNode(depNode, currentFileNode);
                         }

@@ -2,7 +2,7 @@ import { Config } from "../types/global";
 import { checkFileIsBuilt } from "../utils/file";
 import { checkPathIsUseful, concatPath, getCurrentPath } from "../utils/path";
 interface CommandOptions {
-    conifg?: string;
+    config?: string;
     port?:number;
     entry?:string;
 }
@@ -38,10 +38,10 @@ export const normalizeConfig = async (defaultConfig:Config, cmdOptions:CommandOp
         let configPath;
         /** 判断是否使用了'-c'命令输入了配置文件路径 */
         if(commandOptions.includes('config')) {
-            if(!cmdOptions.conifg) {
+            if(!cmdOptions.config) {
                 throw new Error(`Can not found config, please check if it is exist`);
             }
-            configPath = cmdOptions.conifg;
+            configPath = cmdOptions.config;
         } else {
             /** 否则按默认读取 */
             configPath = 'p-trend.config.js';
@@ -51,7 +51,7 @@ export const normalizeConfig = async (defaultConfig:Config, cmdOptions:CommandOp
                 const fullPath = concatPath(getCurrentPath(),configPath);
                 const isExist = await checkFileIsBuilt(fullPath);
                 if(!isExist){
-                    throw new Error(`Can not find conifg file by wrong path, please check if it is exist`);
+                    throw new Error(`Can not find config file by wrong path, please check if it is exist`);
                 }
                 const config = await configLoader(fullPath);
                 result = {...result, ...config};

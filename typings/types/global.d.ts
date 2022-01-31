@@ -48,16 +48,20 @@ export interface Config {
         [key: string]: string;
     };
 }
+export interface ParserPlugin {
+    rule: RegExp | ((name: string) => boolean);
+    collector: (content: string) => Promise<string[]>;
+}
 export interface Praser {
-    alias: Config['alias'];
-    npmDeps: string[];
-    externals: string[];
     parseDependency(node: FileNode): Promise<string[]>;
-    collectImportNodes(code?: string): Promise<string[]>;
+    registerPlugins(ParserPlugin: any): void;
 }
 export interface Scaner {
     entry: string;
+    alias: Config['alias'];
     fileNodes: FileNode[];
+    npmDepsMap: Record<string, number>;
+    externals: string[];
     fileTree: FileTree | null;
     dependenceNodes: DependenceNode[];
     markDependenceNode(target: DependenceNode, currentFileNode: FileNode): Promise<void>;

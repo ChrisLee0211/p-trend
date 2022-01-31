@@ -40,7 +40,6 @@ export default defineComponent({
       if (chartIns.value) {
         chartIns.value.changeData(chartData.value);
       } else {
-        console.log("chartData", chartData.value);
         chartIns.value = new Pie(chartRef.value as HTMLElement, {
           data: chartData.value,
           width: chartRef.value?.offsetWidth ?? 0,
