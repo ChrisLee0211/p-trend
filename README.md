@@ -1,12 +1,9 @@
 # P-Trend
 
 ![IMG](https://img.shields.io/badge/node-12.x.x-blue)
-![IMG](https://img.shields.io/badge/typescript-4.3.3-blue)
-![IMG](https://img.shields.io/badge/koa-2.13.1-brightgreen)
+![IMG](https://img.shields.io/badge/%40swc%2Fcore-1.2.125-blue)
 ![IMG](https://img.shields.io/badge/vue-3.2.16-brightgreen)
 ![IMG](https://img.shields.io/badge/%40antv%2Fg6-4.3.5-blue)
-![IMG](https://img.shields.io/badge/%40vueuse%2Fcore-6.1.0-blue)
-![IMG](https://img.shields.io/badge/commander-7.2.0-blue)
 ![IMG](https://img.shields.io/badge/naive--ui-2.15.11-blue)
 
 一个用于全面解析你的前端项目依赖关系并生成可视化图表的代码扫描工具，能生成各种图表助你快速了解项目的架构！
@@ -34,6 +31,7 @@
   - [1.快速使用命令行直接启动](#快速使用命令行直接启动)
   - [2.读取配置文件启动](#读取配置文件启动)
 - [Q&A](#Q&A)
+- [新特性](#新特性)
 - [许可证](#许可证)
 
 ## 安装
@@ -103,7 +101,14 @@ p-trend -c <your path>
 1. 为什么不直接使用webpack-analyser相关插件？  
 用途不一样，这是用来直接生成当前项目的依赖关系图，而不是打包后的chunks关系图。相比较而言，更像是*webpack*打包的第一阶段所做的事情，内存中生成`module graph`。只不过这里借助G6的能力将依赖关系变为可视化。
 2. 有框架限制吗？  
-有，目前只支持了react，和普通的js、ts项目，因为vue大多数存在`.vue`这样的单文件用法，后续还会继续迭代去支持，敬请期待。
+有，经测试，目前只完整支持react和初步支持vue，但是css的分析依然不支持，后面会继续迭代。
+
+## 新特性
+v2.x中，重新设计了内部架构，采用插件的架构模式来拓展支持的文件类型，使得分析js以外的文件变为可能。同时新增了以下特性和优化：
+
+- 支持vue，包括`.vue`单文件、js组件分析
+- 内部全面替换babel为swc，速度更快
+- 内部支持了npm包依赖追踪，很快可快速查看`package.json`中各安装依赖的使用情况
 
 ## Maintainer
 
