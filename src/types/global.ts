@@ -60,14 +60,13 @@ export interface ParserPlugin {
 
 export interface Praser {
     parseDependency(node:FileNode):Promise<string[]>;
-    // collectImportNodes(code?:string):Promise<string[]>;
     registerPlugins(ParserPlugin):void
 }
 export interface Scaner {
     entry:string
     alias:Config['alias'];
     fileNodes:FileNode[]
-    npmDepsMap: Record<string,number>
+    npmDepsMap: Record<string,{count:number,reference:string[]}>
     externals:string[];
     fileTree:FileTree | null
     dependenceNodes:DependenceNode[]

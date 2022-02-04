@@ -1,11 +1,5 @@
-/* eslint-disable no-debugger */
 import { readFileContent } from "../../utils/file";
-import { transform } from '@swc/core';
-import * as path from 'path';
-import { Config, FileNode, ParserPlugin, Praser } from "../../types/global";
-import { enablePraseType, rootFileEnum } from "../constant";
-import { SWCVisitor } from './swcParser';
-
+import { FileNode, ParserPlugin, Praser } from "../../types/global";
 /**
  * 依赖路径解析器
  */
