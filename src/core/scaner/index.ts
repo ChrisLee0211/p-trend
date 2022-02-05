@@ -171,9 +171,11 @@ export class ScanerCtr implements Scaner {
     /**
      * 初始化npm包到map中，后续用于计数被引用的依赖
      * @param npmDeps npm包列表
-     * @returns 
+     * @returns {Map}
      * @author chris lee
      * @Time 2022/01/30
+     * @update 格式化合并types类型依赖到主包中
+     * @Time 2022/02/05
      */
     private initNpmMaps(npmDeps:string[]) {
         const map:Record<string,{count:number,reference:string[]}> = {};
@@ -181,9 +183,12 @@ export class ScanerCtr implements Scaner {
         const isNoNpmRegsEmpty = this.npmRegs.length === 0;
         for(let i=0;i < len; i++) {
             const npmName = npmDeps[i];
-            map[npmName] = {count:0,reference:[]};
+            const normalizeNpmName = npmName.includes('@types/') ? npmName.replace('@types/','') : npmName;
+            map[normalizeNpmName] = {count:0,reference:[]};
             if (isNoNpmRegsEmpty) {
-                this.npmRegs.push({name:npmName, rule:new RegExp(`(${npmName}(?!-).*)$`,'ig')});
+                if (this.npmRegs.findIndex((regRecord) => regRecord.name === normalizeNpmName)<0){
+                    this.npmRegs.push({name:normalizeNpmName, rule:new RegExp(`(${normalizeNpmName}(?!-).*)$`,'ig')});
+                }
             }
         }
         return map;

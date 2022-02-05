@@ -37,6 +37,7 @@ const test = async () => {
             await scaner.scan(praser.parseDependency, praser);
             await scaner.buildFileTree();
         scaner.diff();
+        console.log(scaner.npmDepsMap);
         new Server(scaner,defaultConfig.entry, defaultConfig.port);
         log(`完成扫描，请打开地址：http://localhost:${defaultConfig.port}/p-trend`,'success');
     }catch(e){
