@@ -71,19 +71,13 @@ export declare class ScanerCtr implements Scaner {
     /**
      * 初始化npm包到map中，后续用于计数被引用的依赖
      * @param npmDeps npm包列表
-     * @returns
+     * @returns {Map}
      * @author chris lee
      * @Time 2022/01/30
+     * @update 格式化合并types类型依赖到主包中
+     * @Time 2022/02/05
      */
     private initNpmMaps;
-    /**
-     * 格式化各路径为绝对路径
-     * @param depPaths 依赖路径数组
-     * @param fileNode 本次解析的目标节点
-     * @returns {array} 依赖路径数组
-     * @author chris lee
-     * @Time 2021/07/20
-     */
     private normalizePaths;
     /**
      * 根据初始化的entry开始以深度遍历方式扫描文件

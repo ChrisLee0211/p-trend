@@ -165,7 +165,6 @@ class ScanerCtr {
                             count: prevCount + 1,
                             reference: [...prevReference, fileNode.path],
                         };
-                        this.npmDepsMap[npmName].count = this.npmDepsMap[npmName].count + 1;
                     }
                     result.push(dep);
                     break;
@@ -177,9 +176,11 @@ class ScanerCtr {
     /**
      * 初始化npm包到map中，后续用于计数被引用的依赖
      * @param npmDeps npm包列表
-     * @returns
+     * @returns {Map}
      * @author chris lee
      * @Time 2022/01/30
+     * @update 格式化合并types类型依赖到主包中
+     * @Time 2022/02/05
      */
     initNpmMaps(npmDeps) {
         const map = {};
@@ -187,14 +188,17 @@ class ScanerCtr {
         const isNoNpmRegsEmpty = this.npmRegs.length === 0;
         for (let i = 0; i < len; i++) {
             const npmName = npmDeps[i];
-            map[npmName] = { count: 0, reference: [] };
+            const normalizeNpmName = npmName.includes('@types/') ? npmName.replace('@types/', '') : npmName;
+            map[normalizeNpmName] = { count: 0, reference: [] };
             if (isNoNpmRegsEmpty) {
-                this.npmRegs.push({ name: npmName, rule: new RegExp(npmName) });
+                if (this.npmRegs.findIndex((regRecord) => regRecord.name === normalizeNpmName) < 0) {
+                    this.npmRegs.push({ name: normalizeNpmName, rule: new RegExp(`(${normalizeNpmName}(?!-).*)$`, 'ig') });
+                }
             }
         }
         return map;
     }
-    /**
+    /*
      * 格式化各路径为绝对路径
      * @param depPaths 依赖路径数组
      * @param fileNode 本次解析的目标节点
@@ -307,9 +311,6 @@ class ScanerCtr {
                         if (effectFn) {
                             const cb = effectFn.bind(ctx);
                             const depPaths = yield cb(currentFileNode);
-                            if (currentFileNode.path === '/Users/chrislee/Documents/self_project/p-trend/client/src/main.ts') {
-                                console.log();
-                            }
                             const depPathsWithoutNpmDeps = this.filterEnabledPath(depPaths, currentFileNode);
                             dependenceFilePaths = this.normalizePaths(depPathsWithoutNpmDeps, currentFileNode);
                         }

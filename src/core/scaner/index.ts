@@ -160,8 +160,9 @@ export class ScanerCtr implements Scaner {
                         };
 
                     }
-                    result.push(dep);
-                    break;
+                    if(result.includes(dep)=== false) {
+                        result.push(dep);
+                    }
                 }
             }
         }
@@ -183,11 +184,12 @@ export class ScanerCtr implements Scaner {
         const isNoNpmRegsEmpty = this.npmRegs.length === 0;
         for(let i=0;i < len; i++) {
             const npmName = npmDeps[i];
-            const normalizeNpmName = npmName.includes('@types/') ? npmName.replace('@types/','') : npmName;
-            map[normalizeNpmName] = {count:0,reference:[]};
+            map[npmName] = {count:0,reference:[]};
             if (isNoNpmRegsEmpty) {
-                if (this.npmRegs.findIndex((regRecord) => regRecord.name === normalizeNpmName)<0){
-                    this.npmRegs.push({name:normalizeNpmName, rule:new RegExp(`(${normalizeNpmName}(?!-).*)$`,'ig')});
+                // 用于协助@types类型依赖也统计到主依赖到计数中
+                const normalizeNpmName = npmName.includes('@types/') ? npmName.replace('@types/','') : npmName;
+                if (this.npmRegs.findIndex((regRecord) => regRecord.name === npmName)<0){
+                    this.npmRegs.push({name:npmName, rule:new RegExp(`(${normalizeNpmName}(?!-).*)$`,'ig')});
                 }
             }
         }
