@@ -9,7 +9,10 @@ export declare class ScanerCtr implements Scaner {
     fileNodes: FileNode[];
     fileTree: FileTree | null;
     dependenceNodes: DependenceNode[];
-    npmDepsMap: Record<string, number>;
+    npmDepsMap: Record<string, {
+        count: number;
+        reference: string[];
+    }>;
     private npmRegs;
     externals: string[];
     constructor(entry: string, alias?: {
@@ -50,27 +53,31 @@ export declare class ScanerCtr implements Scaner {
     /**
      * 过滤出可解析依赖
      * @param depsPath 依赖路径数组
+     * @param currentFileNode 当前正在分析的文件节点
      * @returns 不包含npm以及cdn等外部依赖的路径数组
      * @author chris lee
      * @Time 2021/12/11
      */
     private filterEnabledPath;
     /**
-     * 收集npm包到map中，用于计数被引用的依赖
+     * 收集并记录每个npm包的引用次数及引用路径
+     * @param deps 当前文件内所有依赖名称
+     * @param fileNode 当前正在分析的文件节点
+     * @returns {stirng[]} 返回属于npm包的依赖
+     * @author chris lee
+     * @Time 2022/02/04
+     */
+    private collectNpmDeps;
+    /**
+     * 初始化npm包到map中，后续用于计数被引用的依赖
      * @param npmDeps npm包列表
-     * @returns
+     * @returns {Map}
      * @author chris lee
      * @Time 2022/01/30
+     * @update 格式化合并types类型依赖到主包中
+     * @Time 2022/02/05
      */
-    private collectNpm;
-    /**
-     * 格式化各路径为绝对路径
-     * @param depPaths 依赖路径数组
-     * @param fileNode 本次解析的目标节点
-     * @returns {array} 依赖路径数组
-     * @author chris lee
-     * @Time 2021/07/20
-     */
+    private initNpmMaps;
     private normalizePaths;
     /**
      * 根据初始化的entry开始以深度遍历方式扫描文件

@@ -60,7 +60,10 @@ export interface Scaner {
     entry: string;
     alias: Config['alias'];
     fileNodes: FileNode[];
-    npmDepsMap: Record<string, number>;
+    npmDepsMap: Record<string, {
+        count: number;
+        reference: string[];
+    }>;
     externals: string[];
     fileTree: FileTree | null;
     dependenceNodes: DependenceNode[];

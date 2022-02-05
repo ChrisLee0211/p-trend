@@ -10,7 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PraserCtr = void 0;
-/* eslint-disable no-debugger */
 const file_1 = require("../../utils/file");
 /**
  * 依赖路径解析器

@@ -1,8 +1,7 @@
-import { scanFolder, checkFileIsBuilt, readFileBasicInfo } from '../../utils/file';
+import { scanFolder, readFileBasicInfo } from '../../utils/file';
 import * as path from "path";
 import { Stack } from '../../utils/stack';
 import { Config, DependenceNode, FileNode, FileTree, Scaner } from 'src/types/global';
-import { enablePraseType, rootFileEnum } from '../constant';
 import { removeFile } from '../../utils/file';
 import { PraserCtr } from '../praser';
 import { Dirent } from 'fs';
@@ -17,16 +16,17 @@ export class ScanerCtr implements Scaner {
     fileNodes: FileNode[] = [];
     fileTree: FileTree | null = null;
     dependenceNodes: DependenceNode[] = [];
-    npmDepsMap: Record<string,number> = {};
+    npmDepsMap: Record<string,{count:number,reference:string[]}> = {};
     private npmRegs:Array<{name:string, rule:RegExp}> = [];
     externals: string[] = []
     constructor(entry: string, alias?: { [key: string]: string }, npmDeps?: string[], externals?: string[]) {
         this.alias = alias ?? {};
         this.entry = entry;
-        this.npmDepsMap = this.collectNpm(npmDeps||[]);
+        this.npmDepsMap = this.initNpmMaps(npmDeps||[]);
         this.externals = externals ?? [];
         this.normalizePaths.bind(this);
         this.filterEnabledPath.bind(this);
+        this.collectNpmDeps.bind(this);
     }
 
     /**
@@ -120,60 +120,83 @@ export class ScanerCtr implements Scaner {
     /**
      * 过滤出可解析依赖
      * @param depsPath 依赖路径数组
+     * @param currentFileNode 当前正在分析的文件节点
      * @returns 不包含npm以及cdn等外部依赖的路径数组
      * @author chris lee
      * @Time 2021/12/11
      */
-    private filterEnabledPath(depsPath: string[]): string[] {
-        const quantity = depsPath.length;
-        const npmQuantity = this.npmRegs.length;
-        const depByNpm:string[] = [];
-        for(let i = 0; i< quantity; i++) {
-            const dep = depsPath[i];
-            for(let k = 0; k < npmQuantity;k++) {
-                const npm = this.npmRegs[k];
-                const npmName = npm.name;
-                const rule = npm.rule;
-                if (rule.test(dep)) {
-                    if (npmName in this.npmDepsMap) {
-                        this.npmDepsMap[npmName] = this.npmDepsMap[npmName] + 1;
-                    }
-                    depByNpm.push(dep);
-                    break;
-                }
-            }
-        }
+    private filterEnabledPath(depsPath: string[], currentFileNode: FileNode): string[] {
+        const depByNpm:string[] = this.collectNpmDeps(depsPath,currentFileNode);
         return depsPath.filter((depPath) => {
             return !depByNpm.includes(depPath) || !this.externals.includes(depPath);
         });
     }
 
     /**
-     * 收集npm包到map中，用于计数被引用的依赖
+     * 收集并记录每个npm包的引用次数及引用路径
+     * @param deps 当前文件内所有依赖名称
+     * @param fileNode 当前正在分析的文件节点
+     * @returns {stirng[]} 返回属于npm包的依赖
+     * @author chris lee
+     * @Time 2022/02/04
+     */
+    private collectNpmDeps(deps:string[],fileNode:FileNode):string[] {
+        const result:string[] = [];
+        const quantity = deps.length;
+        const npmQuantity = this.npmRegs.length;
+        for(let i = 0; i< quantity; i++) {
+            const dep = deps[i];
+            for(let k = 0; k < npmQuantity;k++) {
+                const npm = this.npmRegs[k];
+                const npmName = npm.name;
+                const rule = npm.rule;
+                if (rule.test(dep)) {
+                    if (npmName in this.npmDepsMap) {
+                        const prevCount = this.npmDepsMap[npmName].count;
+                        const prevReference = this.npmDepsMap[npmName].reference;
+                        this.npmDepsMap[npmName] = {
+                            count:prevCount+1,
+                            reference:[...prevReference, fileNode.path],
+                        };
+
+                    }
+                    if(result.includes(dep)=== false) {
+                        result.push(dep);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 初始化npm包到map中，后续用于计数被引用的依赖
      * @param npmDeps npm包列表
-     * @returns 
+     * @returns {Map}
      * @author chris lee
      * @Time 2022/01/30
+     * @update 格式化合并types类型依赖到主包中
+     * @Time 2022/02/05
      */
-    private collectNpm(npmDeps:string[]) {
-        const map:Record<string,number> = {};
+    private initNpmMaps(npmDeps:string[]) {
+        const map:Record<string,{count:number,reference:string[]}> = {};
         const len = npmDeps.length;
-        if (this.npmRegs.length === 0) {
-            for(let i=0;i < len; i++) {
-                const npmName = npmDeps[i];
-                map[npmName] = 0;
-                this.npmRegs.push({name:npmName, rule:new RegExp(npmName)});
-            }
-        } else {
-            for(let i=0;i < len; i++) {
-                const npmName = npmDeps[i];
-                map[npmName] = 0;
+        const isNoNpmRegsEmpty = this.npmRegs.length === 0;
+        for(let i=0;i < len; i++) {
+            const npmName = npmDeps[i];
+            map[npmName] = {count:0,reference:[]};
+            if (isNoNpmRegsEmpty) {
+                // 用于协助@types类型依赖也统计到主依赖到计数中
+                const normalizeNpmName = npmName.includes('@types/') ? npmName.replace('@types/','') : npmName;
+                if (this.npmRegs.findIndex((regRecord) => regRecord.name === npmName)<0){
+                    this.npmRegs.push({name:npmName, rule:new RegExp(`(${normalizeNpmName}(?!-).*)$`,'ig')});
+                }
             }
         }
         return map;
     }
 
-    /**
+    /*
      * 格式化各路径为绝对路径
      * @param depPaths 依赖路径数组
      * @param fileNode 本次解析的目标节点
@@ -282,10 +305,7 @@ export class ScanerCtr implements Scaner {
                     if (effectFn) {
                         const cb = effectFn.bind(ctx);
                         const depPaths = await cb(currentFileNode);
-                        if(currentFileNode.path === '/Users/chrislee/Documents/self_project/p-trend/client/src/main.ts') {
-                            console.log();
-                        }
-                        const depPathsWithoutNpmDeps = this.filterEnabledPath(depPaths);
+                        const depPathsWithoutNpmDeps = this.filterEnabledPath(depPaths,currentFileNode);
                         dependenceFilePaths = this.normalizePaths(depPathsWithoutNpmDeps, currentFileNode);
 
                     }

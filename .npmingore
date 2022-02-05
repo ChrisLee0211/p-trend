@@ -3,6 +3,7 @@
 client/src
 client/vite.config.ts
 client/public
+client/README.md
 src/*
 sameple
 test
