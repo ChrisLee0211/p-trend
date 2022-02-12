@@ -3,12 +3,14 @@ import GraphRouter from './graph';
 import ChartRouter from './chart';
 import TableRouter from './table';
 import PageRouter from './page';
+import PkgRouter from './pkg';
 
 const routerlist = [
     GraphRouter,
     ChartRouter,
     TableRouter,
-    PageRouter
+    PageRouter,
+    PkgRouter
 ];
 
 const routerMount = (app:koa) => {
