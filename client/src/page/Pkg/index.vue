@@ -39,7 +39,7 @@
               :key="path"
             >
               <div class="reference-path-name">路径:{{ path }}</div>
-              <n-button text quaternary type="primary">预览</n-button>
+              <n-button text quaternary type="primary" @click="previewFile(path)">预览</n-button>
             </li>
           </n-collapse-item>
         </n-collapse>
@@ -52,6 +52,8 @@ import { useFetch } from "@vueuse/core";
 import { defineComponent, ref, watchEffect } from "vue";
 import { WordCloud } from "@antv/g2plot";
 import { NSpin, NCollapse, NCollapseItem, NButton, NRadioGroup,NSpace,NRadio, NNumberAnimation } from "naive-ui";
+import { COLORS_LEVEL_2, COLORS_LEVEL_1 } from "./constant";
+import axios from "axios";
 
 interface NpmListItem {
   count: number;
@@ -99,40 +101,8 @@ export default defineComponent({
           theme: {
             styleSheet: {
               brandColor: "#5B8FF9",
-              paletteQualitative10: [
-                "#5B8FF9",
-                "#61DDAA",
-                "#65789B",
-                "#F6BD16",
-                "#7262fd",
-                "#78D3F8",
-                "#9661BC",
-                "#F6903D",
-                "#008685",
-                "#F08BB4",
-              ],
-              paletteQualitative20: [
-                "#5B8FF9",
-                "#CDDDFD",
-                "#61DDAA",
-                "#CDF3E4",
-                "#65789B",
-                "#CED4DE",
-                "#F6BD16",
-                "#FCEBB9",
-                "#7262fd",
-                "#D3CEFD",
-                "#78D3F8",
-                "#D3EEF9",
-                "#9661BC",
-                "#DECFEA",
-                "#F6903D",
-                "#FFE0C7",
-                "#008685",
-                "#BBDEDE",
-                "#F08BB4",
-                "#FFE0ED",
-              ],
+              paletteQualitative10: COLORS_LEVEL_1,
+              paletteQualitative20: COLORS_LEVEL_2,
             },
           },
         });
@@ -154,10 +124,17 @@ export default defineComponent({
       }
     });
 
+    const previewFile = (path:string) => {
+      axios.post(`http://localhost:${window.preloadState.port}/pkg/readContent`, {path}).then((res) => {
+        console.log(res);
+      })
+    }
+
     return {
       chartLoading,
       chartData,
       sort,
+      previewFile,
     };
   },
 });
