@@ -46,6 +46,7 @@
       </section>
     </div>
   </div>
+  <PreviewModal :visible="previewModalVisible" :path="previewPath" />
 </template>
 <script lang="ts">
 import { useFetch } from "@vueuse/core";
@@ -53,7 +54,7 @@ import { defineComponent, ref, watchEffect } from "vue";
 import { WordCloud } from "@antv/g2plot";
 import { NSpin, NCollapse, NCollapseItem, NButton, NRadioGroup,NSpace,NRadio, NNumberAnimation } from "naive-ui";
 import { COLORS_LEVEL_2, COLORS_LEVEL_1 } from "./constant";
-import axios from "axios";
+import PreviewModal from './components/previewCodeModal.vue';
 
 interface NpmListItem {
   count: number;
@@ -71,7 +72,8 @@ export default defineComponent({
     NRadioGroup,
     NSpace,
     NRadio,
-    NNumberAnimation
+    NNumberAnimation,
+    PreviewModal
   },
   setup() {
     const chartIns = ref<WordCloud | null>(null);
@@ -124,10 +126,15 @@ export default defineComponent({
       }
     });
 
+    /** ------------------- 预览代码相关逻辑 --------------- */
+    const previewPath = ref('');
+    const previewModalVisible = ref(false);
     const previewFile = (path:string) => {
-      axios.post(`http://localhost:${window.preloadState.port}/pkg/readContent`, {path}).then((res) => {
-        console.log(res);
-      })
+      previewPath.value = path;
+      previewModalVisible.value = true;
+      // axios.post(`http://localhost:${window.preloadState.port}/pkg/readContent`, {path}).then((res) => {
+      //   console.log(res);
+      // })
     }
 
     return {
@@ -135,6 +142,8 @@ export default defineComponent({
       chartData,
       sort,
       previewFile,
+      previewPath,
+      previewModalVisible,
     };
   },
 });
