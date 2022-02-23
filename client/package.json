@@ -12,6 +12,7 @@
     "@vueuse/core": "^6.1.0",
     "axios": "^0.24.0",
     "dayjs": "^1.10.6",
+    "highlight.js": "^11.4.0",
     "naive-ui": "^2.25.2",
     "sass": "^1.37.2",
     "vfonts": "^0.1.0",
