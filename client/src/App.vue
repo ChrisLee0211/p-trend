@@ -1,5 +1,5 @@
 <template>
-  <n-config-provider :hljs="hljs">
+ 
   <n-dialog-provider>
     <n-notification-provider>
       <div class="container">
@@ -13,28 +13,15 @@
       </div>
     </n-notification-provider>
   </n-dialog-provider>
-  </n-config-provider>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, onMounted } from "vue";
 import PageLoading from "./components/PageLoading.vue";
 import Layout from "./page/Layout/index.vue";
-import hljs from 'highlight.js/lib/core';
-import javascript from 'highlight.js/lib/languages/javascript';
-import css from 'highlight.js/lib/languages/css';
-import less from 'highlight.js/lib/languages/less';
-import scss from 'highlight.js/lib/languages/scss';
-import typescript from 'highlight.js/lib/languages/typescript';
-import markdown from 'highlight.js/lib/languages/markdown';
 import { NDialogProvider, NNotificationProvider, NConfigProvider } from "naive-ui";
 
-hljs.registerLanguage('javascript', javascript)
-hljs.registerLanguage('css', css)
-hljs.registerLanguage('less', less)
-hljs.registerLanguage('scss', scss)
-hljs.registerLanguage('typescript', typescript)
-hljs.registerLanguage('markdown', markdown)
+
 
 export default defineComponent({
   name: "App",
@@ -54,7 +41,6 @@ export default defineComponent({
     });
     return {
       isInitFinished,
-      hljs
     };
   },
 });

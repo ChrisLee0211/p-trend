@@ -46,7 +46,7 @@
       </section>
     </div>
   </div>
-  <PreviewModal :visible="previewModalVisible" :path="previewPath" />
+  <PreviewModal :visible="previewModalVisible" :path="previewPath" :onTogle="onTogle" />
 </template>
 <script lang="ts">
 import { useFetch } from "@vueuse/core";
@@ -132,9 +132,9 @@ export default defineComponent({
     const previewFile = (path:string) => {
       previewPath.value = path;
       previewModalVisible.value = true;
-      // axios.post(`http://localhost:${window.preloadState.port}/pkg/readContent`, {path}).then((res) => {
-      //   console.log(res);
-      // })
+    }
+    const onTogle = (state:boolean) => {
+      previewModalVisible.value = state;
     }
 
     return {
@@ -144,6 +144,7 @@ export default defineComponent({
       previewFile,
       previewPath,
       previewModalVisible,
+      onTogle
     };
   },
 });
