@@ -8,7 +8,7 @@ import * as path from 'path';
 import { scanFolder, readFileBasicInfo } from "../src/utils/file";
 
 const defaultConfig = {
-    entry:'src/',
+    entry:'dist/',
     port:8080,
     externals:{},
     alias: {

@@ -1,5 +1,6 @@
 import * as Koa from 'koa';
 import { Scaner } from 'src/types/global';
+import * as fs from 'fs';
 
 interface NpmListItem {
     count:number,
@@ -34,6 +35,18 @@ class PkgService {
             entry: entry
         };
         await next();
+    }
+
+    async readReferenceFile(ctx:Koa.Context,next:Koa.Next):Promise<void> {
+        const filePath = ctx.request.body.path;
+        try{
+            const fileBuffer = fs.createReadStream(filePath);
+            ctx.response.body = fileBuffer;
+        }catch(e) {
+            ctx.response.status = 500;
+        }finally{
+            await next();
+        }
     }
 }
 

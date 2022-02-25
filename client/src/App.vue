@@ -1,4 +1,5 @@
 <template>
+ 
   <n-dialog-provider>
     <n-notification-provider>
       <div class="container">
@@ -18,7 +19,9 @@
 import { defineComponent, ref, onMounted } from "vue";
 import PageLoading from "./components/PageLoading.vue";
 import Layout from "./page/Layout/index.vue";
-import { NDialogProvider, NNotificationProvider } from "naive-ui";
+import { NDialogProvider, NNotificationProvider, NConfigProvider } from "naive-ui";
+
+
 
 export default defineComponent({
   name: "App",
@@ -27,6 +30,7 @@ export default defineComponent({
     Layout,
     NDialogProvider,
     NNotificationProvider,
+    NConfigProvider
   },
   setup() {
     const isInitFinished = ref(false);
