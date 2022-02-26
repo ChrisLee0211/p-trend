@@ -3,6 +3,7 @@
   v-model:show="visible" 
   display-directive="if"  
   preset="dialog" 
+  mask-closable
   @update-show="onTogle"
   title="代码预览">
     <template #header>
@@ -16,7 +17,7 @@
         </section>
         </div>
     <template #action>
-      <n-button>关闭</n-button>
+      <n-button size="small" @click="onTogle(false)">关闭</n-button>
     </template>
   </n-modal>
 </template>
@@ -85,7 +86,6 @@ export default defineComponent({
       isFetching.value = true;
       const pathSplitArr = path.split('.');
       const extname = pathSplitArr[pathSplitArr.length - 1];
-      console.log(' extname ===>', extname);
       if (extname in codeTypeMap) {
           codeType.value = codeTypeMap[extname as keyof typeof codeTypeMap]
       } else {
@@ -145,7 +145,11 @@ export default defineComponent({
         flex:1;
         overflow-y: scroll;
         min-height: 50vh;
-        background: rgb(223, 222, 219);
+        border-radius: 10px;
+        padding: 10px;
+        box-sizing: border-box;
+        word-break: break-all;
+        background: rgb(218, 216, 214);
     }
 }
 </style>

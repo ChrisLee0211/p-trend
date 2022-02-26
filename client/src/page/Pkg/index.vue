@@ -220,12 +220,13 @@ export default defineComponent({
         content-visibility: auto;
       }
       .reference-path {
-        padding: 5px;
+        padding: 10px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         &-name {
           margin-right: 10px;
+          max-width: 80%;
         }
       }
     }
