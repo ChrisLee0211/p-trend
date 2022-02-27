@@ -83,7 +83,8 @@ import {
   NDatePicker,
   NSpace,
   NPagination,
-  useDialog
+  useDialog,
+  useNotification
 } from "naive-ui";
 import { useFetch } from "@vueuse/core";
 import { useTableColumn } from "./useTableColumn";
@@ -120,6 +121,7 @@ export default defineComponent({
     LoadingModal
   },
   setup() {
+    const notice = useNotification();
     /** 表格基础操作逻辑 */
     const dialog = useDialog()
     const loading = ref(false);
@@ -135,22 +137,23 @@ export default defineComponent({
     };
 
     const deleteCurrentFile = (record: FileNode) => {
+      console.log(record)
       dialog.warning({
         title: '提示',
         content: '确定要删除指定的文件吗？',
         positiveText: '删除',
         negativeText: '不删',
-        onPositiveClick:() => {
-          return new Promise<void>((resolve, reject) => {
-             axios
-            .post(`http://localhost:${window.preloadState.port}/table/delete`, { path: record.path })
-            .then((res) => {
-              if (res.data.result) {
-                refreshTable();
-              }
-              resolve();
-            });
-          })
+        onPositiveClick:async () => {
+          console.log(record.path);
+          const res = await axios
+            .post(`http://localhost:${window.preloadState.port}/table/delete`, {path:record.path});
+          if (res.data.result) {
+            refreshTable();
+            notice.success({title:'删除成功'})
+            return true
+          }else {
+            notice.error({title:'删除失败'})
+          }
         }
       })
     };
