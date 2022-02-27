@@ -99,7 +99,7 @@ class TableService {
             let result = false;
             const targetPath = ctx.request.body.path;
             try {
-                // 不然再请求一样会在内存中返回已删除的节点
+                // 需要在扫码器实例内删除，不然再请求一样会在内存中返回已删除的节点
                 const scaner = ctx.state.scaner;
                 result = yield scaner.removeFileNode(targetPath);
             }
