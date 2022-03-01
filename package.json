@@ -1,6 +1,6 @@
 {
   "name": "p-trend",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "a tool to scan unuse module for your project",
   "main": "src/index.ts",
   "author": "chris lee",
