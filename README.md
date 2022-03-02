@@ -24,6 +24,9 @@
 ![IMG](https://raw.githubusercontent.com/ChrisLee0211/self-utils-for-ts/master/src/assets/p-trend/chart.png)
 ### 项目文件管理表格
 ![IMG](https://raw.githubusercontent.com/ChrisLee0211/self-utils-for-ts/master/src/assets/p-trend/table.png)
+
+### 依赖分析云图
+![IMG](https://raw.githubusercontent.com/ChrisLee0211/self-utils-for-ts/master/src/assets/p-trend/pkg.png)
 ## 目录
 
 - [安装](#安装)
@@ -101,14 +104,14 @@ p-trend -c <your path>
 1. 为什么不直接使用webpack-analyser相关插件？  
 用途不一样，这是用来直接生成当前项目的依赖关系图，而不是打包后的chunks关系图。相比较而言，更像是*webpack*打包的第一阶段所做的事情，内存中生成`module graph`。只不过这里借助G6的能力将依赖关系变为可视化。
 2. 有框架限制吗？  
-有，经测试，目前只完整支持react和初步支持vue，但是css的分析依然不支持，后面会继续迭代。
+目前只完整支持react和初步支持vue，但是css的分析依然不支持，后面会继续迭代。
 
 ## 新特性
 v2.x中，重新设计了内部架构，采用插件的架构模式来拓展支持的文件类型，使得分析js以外的文件变为可能。同时新增了以下特性和优化：
 
 - 支持vue，包括`.vue`单文件、js组件分析
 - 内部全面替换babel为swc，速度更快
-- 内部支持了npm包依赖追踪，很快可快速查看`package.json`中各安装依赖的使用情况
+- 内部支持了npm包依赖追踪
 
 ## Maintainer
 
