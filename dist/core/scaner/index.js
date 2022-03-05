@@ -55,7 +55,6 @@ class ScanerCtr {
                         normalizeDepNode = Object.assign(Object.assign({}, target), fileInfo);
                     }
                     catch (e) {
-                        console.error(e);
                         console.error(`Fail to resolve path '${target.path}'`);
                     }
                 }
@@ -136,7 +135,7 @@ class ScanerCtr {
     filterEnabledPath(depsPath, currentFileNode) {
         const depByNpm = this.collectNpmDeps(depsPath, currentFileNode);
         return depsPath.filter((depPath) => {
-            return !depByNpm.includes(depPath) || !this.externals.includes(depPath);
+            return !depByNpm.includes(depPath) && !this.externals.includes(depPath);
         });
     }
     /**

@@ -49,7 +49,6 @@ export class ScanerCtr implements Scaner {
                     const fileInfo = await readFileBasicInfo(target.path);
                     normalizeDepNode = { ...target, ...fileInfo };
                 } catch (e) {
-                    console.error(e);
                     console.error(`Fail to resolve path '${target.path}'`);
                 }
             }
@@ -128,7 +127,7 @@ export class ScanerCtr implements Scaner {
     private filterEnabledPath(depsPath: string[], currentFileNode: FileNode): string[] {
         const depByNpm:string[] = this.collectNpmDeps(depsPath,currentFileNode);
         return depsPath.filter((depPath) => {
-            return !depByNpm.includes(depPath) || !this.externals.includes(depPath);
+            return !depByNpm.includes(depPath) && !this.externals.includes(depPath);
         });
     }
 
