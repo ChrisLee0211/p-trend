@@ -16,6 +16,7 @@ const swcParser_1 = require("../praser/swcParser");
  */
 exports.jsPlugin = {
     rule: /\.(js|jsx|ts|tsx)$/,
+    exclude: /\.(d.ts)$/,
     collector: (code) => __awaiter(void 0, void 0, void 0, function* () {
         if (!code)
             return [];

@@ -34,33 +34,41 @@ class PraserCtr {
             const pathname = node.path;
             const len = this.plugins.length;
             if (len) {
-                for (let i = 0; i < len; i++) {
-                    const plugin = this.plugins[i];
-                    let isMatch = false;
-                    if (typeof (plugin.rule) === 'function') {
-                        isMatch = plugin.rule(pathname);
+                try {
+                    for (let i = 0; i < len; i++) {
+                        const plugin = this.plugins[i];
+                        let isMatch = false;
+                        if (typeof (plugin.rule) === 'function') {
+                            isMatch = plugin.rule(pathname);
+                        }
+                        else {
+                            isMatch = plugin.rule.test(pathname);
+                        }
+                        if (plugin.exclude) {
+                            let isExclude = false;
+                            if (typeof (plugin.exclude) === 'function') {
+                                isExclude = plugin.exclude(pathname);
+                            }
+                            else {
+                                isExclude = plugin.exclude.test(pathname);
+                            }
+                            if (isExclude)
+                                continue;
+                        }
+                        if (isMatch) {
+                            const content = yield file_1.readFileContent(pathname, { encoding: 'utf8' });
+                            result = yield plugin.collector(content);
+                            break;
+                        }
                     }
-                    else {
-                        isMatch = plugin.rule.test(pathname);
-                    }
-                    if (isMatch) {
-                        const content = yield file_1.readFileContent(pathname, { encoding: 'utf8' });
-                        result = yield plugin.collector(content);
-                        break;
-                    }
+                }
+                catch (e) {
+                    console.error(`Fail to resolve ${pathname}! Need other plugin to parse file.`);
                 }
             }
             else {
                 return result;
             }
-            // if(enablePraseType.includes(path.extname(pathname)) === false) return result;
-            // try{
-            //     const content = await readFileContent(pathname,{encoding:'utf8'}) as string;
-            //     const depPaths = await this.collectImportNodes(content);
-            //     result = depPaths;
-            // }catch(e){
-            //     console.error(e);
-            // }
             return result;
         });
     }

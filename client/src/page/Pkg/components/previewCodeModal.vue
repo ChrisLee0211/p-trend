@@ -3,6 +3,7 @@
   v-model:show="visible" 
   display-directive="if"  
   preset="dialog" 
+  style="width: auto;"
   mask-closable
   @update-show="onTogle"
   title="代码预览">
@@ -132,7 +133,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .preview {
     height: 70vh;
-    width: 100%;
+    width: 60vw;
     display: flex;
     flex-direction: column;
     .head {

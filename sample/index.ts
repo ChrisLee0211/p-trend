@@ -1,6 +1,6 @@
 import { ScanerCtr } from "../src/core/scaner";
 import { PraserCtr } from '../src/core/praser';
-import { jsPlugin, vuePlugin } from '../src/core/plugins';
+import { jsPlugin, vuePlugin, lessPlugin } from '../src/core/plugins';
 import { Server } from '../src/server';
 import { resolveExternals, resolvePackage } from "../src/core/helper/resolvePackage";
 import { log } from '../src/utils/log';
@@ -8,7 +8,7 @@ import * as path from 'path';
 import { scanFolder, readFileBasicInfo } from "../src/utils/file";
 
 const defaultConfig = {
-    entry:'dist/',
+    entry:'src/',
     port:8080,
     externals:{},
     alias: {
@@ -33,6 +33,7 @@ const test = async () => {
         const praser = new PraserCtr();
             praser.registerPlugins(jsPlugin);
             praser.registerPlugins(vuePlugin);
+            praser.registerPlugins(lessPlugin);
             const scaner = new ScanerCtr(defaultConfig.entry,defaultConfig.alias, npmDependency, externals);
             await scaner.scan(praser.parseDependency, praser);
             await scaner.buildFileTree();

@@ -6,6 +6,7 @@ import { scanImportDeclaration } from "../praser/swcParser";
  */
 export const jsPlugin:ParserPlugin = {
     rule:/\.(js|jsx|ts|tsx)$/,
+    exclude:/\.(d.ts)$/,
     collector:async (code) => {
         if(!code) return [];
         const result:string[] = await scanImportDeclaration(code);

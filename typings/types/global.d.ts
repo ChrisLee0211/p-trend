@@ -49,8 +49,12 @@ export interface Config {
     };
 }
 export interface ParserPlugin {
+    /** 文件匹配规则 */
     rule: RegExp | ((name: string) => boolean);
+    /** 收集依赖函数 */
     collector: (content: string) => Promise<string[]>;
+    /** 忽略文件规则 */
+    exclude?: RegExp | ((name: string) => boolean);
 }
 export interface Praser {
     parseDependency(node: FileNode): Promise<string[]>;

@@ -92,8 +92,9 @@ export default defineComponent({
           colorField: "name",
           wordStyle: {
             fontFamily: "Verdana",
-            fontSize: [8, 32],
+            fontSize: [10, 32],
             rotation: 0,
+            padding: 5
           },
           // 返回值设置成一个 [0, 1) 区间内的值，
           // 可以让每次渲染的位置相同（前提是每次的宽高一致）。
