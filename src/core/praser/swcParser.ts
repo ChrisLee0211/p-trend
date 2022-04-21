@@ -57,6 +57,23 @@ type CollectFnType = (path:string) => void
                 this.collectFn(path);
             }
     }
+    // visitCallExpression(fn:CallExpression): Expression {
+    //     if(fn.callee.type === 'Identifier') {
+    //         const fnName = fn.callee.value;
+    //         if(fnName === 't') {
+    //             const param = fn.arguments[0];
+    //             // 是普通字符串
+    //             if(param.expression.type === 'StringLiteral') {
+    //                 const key = param.expression.value;
+    //             }
+    //             // 可能是外部import的常量或变量
+    //             if(param.expression.type === 'Identifier') {
+    //                 const keyVariableName = param.expression.value;
+    //             }
+    //         }
+    //     }
+    //     return fn;
+    // }
     visitModule(m: Module): Module {
          const importContents = m.body;
          if(importContents.length) {
