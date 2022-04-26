@@ -2,32 +2,34 @@ import * as Koa from 'koa';
 import { FileNode, Scaner } from 'src/types/global';
 
 const sortyFileNodes = (nodes: FileNode[], sortBy: Array<SortType>): FileNode[] => {
-    const list = nodes;
+    let list = nodes;
     const sortTypes = sortBy;
     while (sortTypes.length) {
         const currentSortType = sortTypes.pop();
         switch (currentSortType) {
             case "ctime_asce":
+                list = list.sort((a,b) => Number(a.ctime) - Number(b.ctime));
                 break;
-
             case "ctime_desce":
+                list = list.sort((a,b) => Number(b.ctime) - Number(a.ctime));
                 break;
-
             case "deps_asce":
+                list = list.sort((a,b) => a.deps.length - b.deps.length);
                 break;
-
             case "deps_desce":
+                list = list.sort((a,b) => b.deps.length - a.deps.length);
                 break;
-
             case "size_asce":
+                list = list.sort((a,b) => Number(a.fileSize) - Number(b.fileSize));
                 break;
-
             case "size_desce":
+                list = list.sort((a,b) => Number(b.fileSize) - Number(a.fileSize));
                 break;
-
             case "utime_asce":
+                list = list.sort((a,b) => Number(a.utime) - Number(b.utime));
                 break;
             case "utime_desce":
+                list = list.sort((a,b) => Number(b.utime) - Number(a.utime));
                 break;
             default:
 
