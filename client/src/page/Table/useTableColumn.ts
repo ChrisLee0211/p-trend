@@ -28,6 +28,8 @@ export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Ref<
             title: '更新时间',
             key: 'utime',
             align:'center',
+            sortOrder: 'ascend',
+            sorter:true,
             render(row) {
                 const utime = row?.utime;
                 return utime? formatTime(utime) : 'none';
@@ -37,6 +39,8 @@ export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Ref<
             title: '文件大小',
             key: 'fileSize',
             align:'center',
+            sortOrder: 'ascend',
+            sorter:true,
             render(row) {
                 const fileSize = row?.fileSize;
                 return fileSize ? formatFileSize(fileSize) : 'none';
@@ -46,6 +50,8 @@ export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Ref<
             title: '依赖数',
             key: 'deps',
             align:'center',
+            sortOrder: 'ascend',
+            sorter:true,
             render(row) {
                 return row.deps.length;
             }

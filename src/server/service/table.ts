@@ -5,7 +5,7 @@ const sortyFileNodes = (nodes: FileNode[], sortBy: Array<SortType>): FileNode[] 
     let list = nodes;
     const sortTypes = sortBy;
     while (sortTypes.length) {
-        const currentSortType = sortTypes.pop();
+        const currentSortType = sortTypes.shift();
         switch (currentSortType) {
             case "ctime_ascend":
                 list = list.sort((a,b) => Number(a.ctime) - Number(b.ctime));
@@ -20,10 +20,10 @@ const sortyFileNodes = (nodes: FileNode[], sortBy: Array<SortType>): FileNode[] 
                 list = list.sort((a,b) => b.deps.length - a.deps.length);
                 break;
             case "fileSize_ascend":
-                list = list.sort((a,b) => Number(a.fileSize) - Number(b.fileSize));
+                list = list.sort((a,b) => Number(a?.fileSize??0) - Number(b?.fileSize??0));
                 break;
             case "fileSize_descend":
-                list = list.sort((a,b) => Number(b.fileSize) - Number(a.fileSize));
+                list = list.sort((a,b) => Number(b?.fileSize??0) - Number(a?.fileSize??0));
                 break;
             case "utime_ascend":
                 list = list.sort((a,b) => Number(a.utime) - Number(b.utime));

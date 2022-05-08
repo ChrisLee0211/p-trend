@@ -280,21 +280,15 @@ export default defineComponent({
 
     /** 排序逻辑 */
     const handleSorterChange:OnUpdateSorter = (sorter: SortState) => {
-      console.log('sorter ===>', sorter);
       if(sorter) {
+        const order = sorter.order === 'ascend' ? 'ascend' : 'descend';
         const reverseOrder = sorter.order === 'ascend' ? 'descend' : 'ascend';
-        const param = `${sorter.columnKey}_${sorter.order}` as SortType;
+        const param = `${sorter.columnKey}_${order}` as SortType;
         const reverseParam = `${sorter.columnKey}_${reverseOrder}` as SortType;
         if(searchParams.sortBy.includes(reverseParam)) {
-          searchParams.sortBy = searchParams.sortBy.map((val) => {
-            if(val === reverseParam) {
-              return param
-            }
-            return val
-          })
-        } else {
-          searchParams.sortBy.push(param)
+          searchParams.sortBy = searchParams.sortBy.filter((val) => val!==reverseParam);
         }
+        searchParams.sortBy.push(param)
       }
     }
     return {
