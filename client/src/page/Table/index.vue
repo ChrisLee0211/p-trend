@@ -43,13 +43,14 @@
           :data="tableData"
           :loading="loading"
           :row-key="(row) => row.path"
+          @update:sorter="handleSorterChange"
           @update:checked-row-keys="handleSelect"
         />
         <n-space justify="center">
           <n-pagination
             v-model:page="searchParams.page"
             :item-count="total"
-            @change="changePage"
+            @update-page="changePage"
           />
         </n-space>
       </n-space>
@@ -91,6 +92,9 @@ import { useTableColumn } from "./useTableColumn";
 import Detail from "./components/Detail.vue";
 import LoadingModal from "./components/LoadingModal.vue";
 import axios from "axios";
+import { OnUpdateSorter, SortOrder, SortState, TableBaseColumn } from "naive-ui/lib/data-table/src/interface";
+
+type SortType = 'deps_ascend' | 'deps_descend' | 'fileSize_ascend' | 'fileSize_descend' | 'ctime_ascend' | 'ctime_descend' | 'utime_ascend' | 'utime_descend'
 
 interface SearchParams {
   page: number;
@@ -98,6 +102,7 @@ interface SearchParams {
   name: string | undefined;
   updatedAt: [number, number] | null;
   createdAt: [number, number] | null;
+  sortBy:SortType[]
 }
 
 interface ApiResponse {
@@ -157,6 +162,7 @@ export default defineComponent({
         }
       })
     };
+
     const tableColumn = useTableColumn(setDetail, deleteCurrentFile);
     const tableData = computed<FileNode[]>(() => {
       return data.value ? data.value.data : [];
@@ -169,6 +175,7 @@ export default defineComponent({
       name: "",
       updatedAt: null,
       createdAt: null,
+      sortBy:['ctime_ascend', 'deps_ascend','fileSize_ascend', 'utime_ascend']
     });
     const fetchTableDataUrl = computed(() => {
       const urlObject = new URL(`http://localhost:${window.preloadState.port}/table`);
@@ -183,6 +190,10 @@ export default defineComponent({
       }
       if (searchParams.name && searchParams.name !== "") {
         searchObject.set("name", searchParams.name);
+      }
+      if(searchParams.sortBy.length) {
+        const params = searchParams.sortBy.join(',');
+        searchObject.set("sortBy", params);
       }
       searchObject.set("page", String(searchParams.page));
       searchObject.set("pageSize", String(searchParams.pageSize));
@@ -202,6 +213,23 @@ export default defineComponent({
     onFetchFinally(() => {
       loading.value = false;
       total.value = data.value ? data.value.total : 0;
+      const sortByList = searchParams.sortBy;
+      tableColumn.value = tableColumn.value.map((column) => {
+        if(column.type === 'selection' || column.type === 'expand') return column;
+        if(column.key === 'ctime') {
+          (column as TableBaseColumn).sortOrder = sortByList.includes('ctime_ascend') ? 'ascend' : 'descend'
+        };
+        if(column.key === 'utime') {
+          (column as TableBaseColumn).sortOrder = sortByList.includes('utime_ascend') ? 'ascend' : 'descend'
+        };
+        if(column.key === 'deps') {
+          (column as TableBaseColumn).sortOrder = sortByList.includes('deps_ascend') ? 'ascend' : 'descend'
+        };
+        if(column.key === 'fileSize') {
+          (column as TableBaseColumn).sortOrder = sortByList.includes('fileSize_ascend') ? 'ascend' : 'descend'
+        };
+        return column
+      })
     });
     const changePage = (page: number) => {
       searchParams.page = page;
@@ -249,6 +277,20 @@ export default defineComponent({
         }
       })
     };
+
+    /** 排序逻辑 */
+    const handleSorterChange:OnUpdateSorter = (sorter: SortState) => {
+      if(sorter) {
+        const order = sorter.order === 'ascend' ? 'ascend' : 'descend';
+        const reverseOrder = sorter.order === 'ascend' ? 'descend' : 'ascend';
+        const param = `${sorter.columnKey}_${order}` as SortType;
+        const reverseParam = `${sorter.columnKey}_${reverseOrder}` as SortType;
+        if(searchParams.sortBy.includes(reverseParam)) {
+          searchParams.sortBy = searchParams.sortBy.filter((val) => val!==reverseParam);
+        }
+        searchParams.sortBy.push(param)
+      }
+    }
     return {
       searchParams,
       loading,
@@ -262,6 +304,7 @@ export default defineComponent({
       handleSelect,
       currentSelections,
       batchRemoveFiles,
+      handleSorterChange,
       loadingModalVisible,
       success,
       fail

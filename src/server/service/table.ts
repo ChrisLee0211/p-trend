@@ -5,30 +5,30 @@ const sortyFileNodes = (nodes: FileNode[], sortBy: Array<SortType>): FileNode[] 
     let list = nodes;
     const sortTypes = sortBy;
     while (sortTypes.length) {
-        const currentSortType = sortTypes.pop();
+        const currentSortType = sortTypes.shift();
         switch (currentSortType) {
-            case "ctime_asce":
+            case "ctime_ascend":
                 list = list.sort((a,b) => Number(a.ctime) - Number(b.ctime));
                 break;
-            case "ctime_desce":
+            case "ctime_descend":
                 list = list.sort((a,b) => Number(b.ctime) - Number(a.ctime));
                 break;
-            case "deps_asce":
+            case "deps_ascend":
                 list = list.sort((a,b) => a.deps.length - b.deps.length);
                 break;
-            case "deps_desce":
+            case "deps_descend":
                 list = list.sort((a,b) => b.deps.length - a.deps.length);
                 break;
-            case "size_asce":
-                list = list.sort((a,b) => Number(a.fileSize) - Number(b.fileSize));
+            case "fileSize_ascend":
+                list = list.sort((a,b) => Number(a?.fileSize??0) - Number(b?.fileSize??0));
                 break;
-            case "size_desce":
-                list = list.sort((a,b) => Number(b.fileSize) - Number(a.fileSize));
+            case "fileSize_descend":
+                list = list.sort((a,b) => Number(b?.fileSize??0) - Number(a?.fileSize??0));
                 break;
-            case "utime_asce":
+            case "utime_ascend":
                 list = list.sort((a,b) => Number(a.utime) - Number(b.utime));
                 break;
-            case "utime_desce":
+            case "utime_descend":
                 list = list.sort((a,b) => Number(b.utime) - Number(a.utime));
                 break;
             default:
@@ -38,7 +38,7 @@ const sortyFileNodes = (nodes: FileNode[], sortBy: Array<SortType>): FileNode[] 
     return list;
 };
 
-type SortType = 'deps_asce' | 'deps_desce' | 'size_asce' | 'size_desce' | 'ctime_asce' | 'ctime_desce' | 'utime_asce' | 'utime_desce'
+type SortType = 'deps_ascend' | 'deps_descend' | 'fileSize_ascend' | 'fileSize_descend' | 'ctime_ascend' | 'ctime_descend' | 'utime_ascend' | 'utime_descend'
 interface SearchQuery {
     name?: string,
     ctime?: [number, number],
@@ -111,6 +111,7 @@ class TableService {
         const utimeStart = query?.utimeStart;
         const utimeEnd = query?.utimeEnd;
         const pageSize = Number(query?.PageSize ?? 10);
+        const sortBy = query?.sortBy;
         const searchParam: SearchQuery = {};
         if (name && name !== '') {
             searchParam['name'] = name;
@@ -120,6 +121,9 @@ class TableService {
         }
         if (utimeStart && utimeEnd) {
             searchParam['ctime'] = [Number(utimeStart), Number(utimeEnd)];
+        }
+        if (sortBy) {
+            searchParam['sortBy'] = (sortBy as string).split(',') as unknown as SortType[];
         }
         const fileNodes = scaner.fileNodes;
         const result = filterFileNodes(fileNodes, page, pageSize, searchParam);

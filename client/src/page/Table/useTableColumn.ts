@@ -1,10 +1,10 @@
-import {ref, h} from 'vue';
+import {h, Ref, ref} from 'vue';
 import {formatFileSize, formatTime} from './helpers';
-import { DataTableColumn, NSpace, NButton } from 'naive-ui';
+import { DataTableColumn, NButton } from 'naive-ui';
    
 type effectFn = (record:FileNode)=>void
-export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):DataTableColumn<FileNode>[] => {
-    return [
+export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Ref<DataTableColumn<FileNode>[]> => {
+    const columns = ref<DataTableColumn<FileNode>[]>([
         {
             type:'selection',
         },
@@ -17,6 +17,8 @@ export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Data
             title: '创建时间',
             key: 'ctime',
             align:'center',
+            sortOrder: 'ascend',
+            sorter:true,
             render(row) {
                 const ctime = row?.ctime;
                 return ctime? formatTime(ctime) : 'none';
@@ -26,6 +28,8 @@ export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Data
             title: '更新时间',
             key: 'utime',
             align:'center',
+            sortOrder: 'ascend',
+            sorter:true,
             render(row) {
                 const utime = row?.utime;
                 return utime? formatTime(utime) : 'none';
@@ -35,6 +39,8 @@ export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Data
             title: '文件大小',
             key: 'fileSize',
             align:'center',
+            sortOrder: 'ascend',
+            sorter:true,
             render(row) {
                 const fileSize = row?.fileSize;
                 return fileSize ? formatFileSize(fileSize) : 'none';
@@ -44,6 +50,8 @@ export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Data
             title: '依赖数',
             key: 'deps',
             align:'center',
+            sortOrder: 'ascend',
+            sorter:true,
             render(row) {
                 return row.deps.length;
             }
@@ -89,5 +97,7 @@ export const useTableColumn = (setDetailFn:effectFn, deleteFileFn:effectFn):Data
                 );
             }
         },
-    ];
+    ]);
+
+    return columns;
 };
